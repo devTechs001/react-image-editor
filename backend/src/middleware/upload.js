@@ -1,48 +1,94 @@
-import multer from 'multer';
-import multerS3 from 'multer-s3';
-import { S3Client } from '@aws-sdk/client-s3';
-import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+// backend/src/middleware/upload.js
+const multer = require('multer');
+const path = require('path');
+const crypto = require('crypto');
+const { AppError } = require('./errorHandler');
+const config = require('../config/app');
 
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  },
-});
+// Memory storage for processing before cloud upload
+const storage = multer.memoryStorage();
 
-export const uploadToS3 = multer({
-  storage: multerS3({
-    s3: s3Client,
-    bucket: process.env.AWS_S3_BUCKET,
-    metadata: (req, file, cb) => {
-      cb(null, { fieldName: file.fieldname });
-    },
-    key: (req, file, cb) => {
-      const uniqueName = `${Date.now()}-${uuidv4()}${path.extname(file.originalname)}`;
-      cb(null, `uploads/${uniqueName}`);
-    },
-  }),
+// File filter
+const fileFilter = (allowedTypes) => (req, file, cb) => {
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new AppError(`File type ${file.mimetype} is not allowed.`, 400), false);
+  }
+};
+
+// Image upload
+const uploadImage = multer({
+  storage,
   limits: {
-    fileSize: 100 * 1024 * 1024, // 100MB
+    fileSize: config.upload.maxFileSize,
+    files: 10
   },
-  fileFilter: (req, file, cb) => {
-    const allowedMimes = [
-      'image/jpeg',
-      'image/png',
-      'image/webp',
-      'image/gif',
-      'video/mp4',
-      'video/webm',
-      'audio/mpeg',
-      'audio/wav',
-    ];
-
-    if (allowedMimes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Invalid file type'));
-    }
-  },
+  fileFilter: fileFilter(config.upload.allowedImageTypes)
 });
+
+// Video upload
+const uploadVideo = multer({
+  storage,
+  limits: {
+    fileSize: config.upload.maxFileSize * 10, // 500MB for videos
+    files: 5
+  },
+  fileFilter: fileFilter(config.upload.allowedVideoTypes)
+});
+
+// Audio upload
+const uploadAudio = multer({
+  storage,
+  limits: {
+    fileSize: config.upload.maxFileSize,
+    files: 10
+  },
+  fileFilter: fileFilter(config.upload.allowedAudioTypes)
+});
+
+// Mixed upload (any supported type)
+const uploadAny = multer({
+  storage,
+  limits: {
+    fileSize: config.upload.maxFileSize,
+    files: 10
+  },
+  fileFilter: fileFilter([
+    ...config.upload.allowedImageTypes,
+    ...config.upload.allowedVideoTypes,
+    ...config.upload.allowedAudioTypes
+  ])
+});
+
+// Generate unique filename
+const generateFilename = (originalname) => {
+  const ext = path.extname(originalname);
+  const hash = crypto.randomBytes(16).toString('hex');
+  return `${hash}${ext}`;
+};
+
+// Handle multer errors
+const handleUploadError = (err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return next(new AppError('File too large.', 400));
+    }
+    if (err.code === 'LIMIT_FILE_COUNT') {
+      return next(new AppError('Too many files.', 400));
+    }
+    if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+      return next(new AppError('Unexpected file field.', 400));
+    }
+  }
+  next(err);
+};
+
+module.exports = {
+  uploadImage,
+  uploadVideo,
+  uploadAudio,
+  uploadAny,
+  generateFilename,
+  handleUploadError
+};

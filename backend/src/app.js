@@ -1,145 +1,119 @@
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import compression from 'compression';
-import morgan from 'morgan';
-import mongoSanitize from 'express-mongo-sanitize';
-import rateLimit from 'express-rate-limit';
-import { createServer } from 'http';
-import { Server } from 'socket.io';
-import mongoose from 'mongoose';
-import Redis from 'ioredis';
-import Bull from 'bull';
+// backend/src/app.js
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const compression = require('compression');
+const rateLimit = require('express-rate-limit');
+const { createServer } = require('http');
+const { Server } = require('socket.io');
+const passport = require('passport');
 
-// Routes
-import authRoutes from './routes/auth.js';
-import userRoutes from './routes/users.js';
-import projectRoutes from './routes/projects.js';
-import imageRoutes from './routes/images.js';
-import videoRoutes from './routes/videos.js';
-import audioRoutes from './routes/audio.js';
-import aiRoutes from './routes/ai.js';
-import templateRoutes from './routes/templates.js';
-import exportRoutes from './routes/export.js';
-import storageRoutes from './routes/storage.js';
+const config = require('./config/app');
+const connectDB = require('./config/database');
+const { createRedisClient } = require('./config/redis');
+const routes = require('./routes');
+const { errorHandler, notFound } = require('./middleware/errorHandler');
+const logger = require('./utils/logger');
+const { initializeSocketServer } = require('./websocket/socketServer');
 
-// Middleware
-import { errorHandler } from './middleware/errorHandler.js';
-import { logger } from './utils/logger.js';
-
-// Config
-import config from './config/app.js';
-
+// Initialize Express App
 const app = express();
 const httpServer = createServer(app);
 
-// Socket.IO
+// Initialize Socket.IO
 const io = new Server(httpServer, {
   cors: {
-    origin: config.corsOrigin,
-    credentials: true,
+    origin: config.cors.origin,
+    credentials: true
   },
+  pingTimeout: 60000
 });
 
-// Redis
-export const redis = new Redis({
-  host: config.redis.host,
-  port: config.redis.port,
-  password: config.redis.password,
-  db: config.redis.db,
-});
+// Connect to Database
+connectDB();
 
-// Bull Queue
-export const imageQueue = new Bull('image-processing', {
-  redis: config.redis,
-});
+// Connect to Redis
+createRedisClient();
 
-export const videoQueue = new Bull('video-processing', {
-  redis: config.redis,
-});
+// Security Middleware
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  crossOriginEmbedderPolicy: false
+}));
 
-export const aiQueue = new Bull('ai-processing', {
-  redis: config.redis,
-});
+// CORS
+app.use(cors(config.cors));
 
-// MongoDB Connection
-mongoose
-  .connect(config.mongodbUri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => logger.info('MongoDB connected'))
-  .catch((err) => logger.error('MongoDB connection error:', err));
+// Request Parsing
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Middleware
-app.use(helmet());
+// Compression
 app.use(compression());
-app.use(cors({ origin: config.corsOrigin, credentials: true }));
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-app.use(mongoSanitize());
-app.use(morgan('combined', { stream: { write: (msg) => logger.info(msg.trim()) } }));
+
+// Logging
+if (config.env !== 'test') {
+  app.use(morgan('combined', { stream: logger.stream }));
+}
 
 // Rate Limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
-  message: 'Too many requests from this IP',
+  windowMs: config.rateLimit.windowMs,
+  max: config.rateLimit.max,
+  message: {
+    success: false,
+    message: 'Too many requests, please try again later.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false
 });
+app.use('/api', limiter);
 
-app.use('/api/', limiter);
+// Passport
+app.use(passport.initialize());
+require('./middleware/passport')(passport);
 
-// Routes
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/projects', projectRoutes);
-app.use('/api/images', imageRoutes);
-app.use('/api/videos', videoRoutes);
-app.use('/api/audio', audioRoutes);
-app.use('/api/ai', aiRoutes);
-app.use('/api/templates', templateRoutes);
-app.use('/api/export', exportRoutes);
-app.use('/api/storage', storageRoutes);
-
-// Socket.IO Events
-io.on('connection', (socket) => {
-  logger.info(`Client connected: ${socket.id}`);
-
-  socket.on('join-project', (projectId) => {
-    socket.join(projectId);
-    logger.info(`Client ${socket.id} joined project ${projectId}`);
-  });
-
-  socket.on('leave-project', (projectId) => {
-    socket.leave(projectId);
-    logger.info(`Client ${socket.id} left project ${projectId}`);
-  });
-
-  socket.on('disconnect', () => {
-    logger.info(`Client disconnected: ${socket.id}`);
+// Health Check
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Server is healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
   });
 });
 
-export { io };
+// API Routes
+app.use(config.apiPrefix, routes);
 
-// Error Handler
+// Initialize WebSocket
+initializeSocketServer(io);
+
+// Make io accessible in routes
+app.set('io', io);
+
+// Error Handling
+app.use(notFound);
 app.use(errorHandler);
 
-// 404 Handler
-app.use((req, res) => {
-  res.status(404).json({ error: 'Route not found' });
-});
-
 // Start Server
-const PORT = config.port || 5000;
-
+const PORT = config.port;
 httpServer.listen(PORT, () => {
-  logger.info(`Server running on port ${PORT}`);
-  logger.info(`Environment: ${config.env}`);
+  logger.info(`🚀 Server running in ${config.env} mode on port ${PORT}`);
+  logger.info(`📚 API Docs: http://localhost:${PORT}/api/docs`);
 });
 
-export default app;
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  logger.error('Unhandled Rejection:', err);
+  httpServer.close(() => process.exit(1));
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  logger.error('Uncaught Exception:', err);
+  process.exit(1);
+});
+
+module.exports = { app, httpServer, io };

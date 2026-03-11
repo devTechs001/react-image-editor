@@ -888,3 +888,79 @@
 ├── .gitignore
 ├── LICENSE
 └── README.md
+
+
+
+# README.md
+
+# 🎨 AI Media Editor
+
+A professional-grade, AI-powered media editing platform built with React and Node.js.
+
+![AI Media Editor](https://via.placeholder.com/1200x600?text=AI+Media+Editor)
+
+## ✨ Features
+
+### 🖼️ Image Editing
+- Professional-grade canvas with layers
+- Advanced filters and adjustments
+- Brush, eraser, and drawing tools
+- Crop, resize, rotate, and flip
+- Text and shapes
+- Blend modes and masks
+
+### 🤖 AI-Powered Tools
+- **Background Removal** - One-click background removal
+- **AI Enhancement** - Automatic image enhancement
+- **Upscaling** - AI-powered image upscaling up to 4x
+- **Style Transfer** - Apply artistic styles
+- **Object Removal** - Remove unwanted objects
+- **Face Enhancement** - Enhance facial features
+- **Image Generation** - Generate images from text
+- **Smart Crop** - AI-powered intelligent cropping
+
+### 🎬 Video Editing
+- Timeline-based editing
+- Trim, split, merge
+- Transitions and effects
+- Audio synchronization
+- Export in multiple formats
+
+### 🎵 Audio Editing
+- Waveform visualization
+- Trim and merge
+- Effects and filters
+- Voice enhancement
+- Noise reduction
+
+### 📱 Mobile Support
+- Responsive design
+- Touch gestures
+- PWA support
+- Offline capability
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+
+- MongoDB 6+
+- Redis 7+
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/ai-media-editor.git
+cd ai-media-editor
+
+# Run setup script
+chmod +x scripts/setup.sh
+./scripts/setup.sh
+
+# Configure environment
+cp frontend/.env.example frontend/.env
+cp backend/.env.example backend/.env
+# Edit .env files with your configuration
+
+# Start development servers
+npm run dev
