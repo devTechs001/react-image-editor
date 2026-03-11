@@ -1,186 +1,225 @@
-// backend/src/queue/workers.js
-const { Worker } = require('bullmq');
-const logger = require('../utils/logger');
-const imageProcessor = require('../services/image/processor');
-const videoProcessor = require('../services/video/processor');
-const emailService = require('../services/email/emailService');
-const aiService = require('../services/ai');
+// backend/src/services/queue/workers.js
+const {
+  imageProcessingQueue,
+  videoProcessingQueue,
+  aiProcessingQueue,
+  exportQueue,
+  emailQueue,
+  cleanupQueue
+} = require('./bullQueue');
 
-const connection = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT) || 6379,
-  password: process.env.REDIS_PASSWORD || undefined
-};
+const logger = require('../../utils/logger');
+const imageProcessor = require('../image/processor');
+const videoProcessor = require('../video/processor');
+const emailService = require('../email/emailService');
+const { exportImage, exportGif, exportVideo } = require('../export/imageExport');
+const { deleteFromStorage } = require('../storage/s3Storage');
+const User = require('../../models/User');
+const Project = require('../../models/Project');
+const Export = require('../../models/Export');
 
-// Image Processing Worker
-const imageWorker = new Worker('image-processing', async (job) => {
-  const { type, data } = job.data;
-  logger.info(`Processing image job: ${job.id}, type: ${type}`);
+/**
+ * Initialize all queue workers
+ */
+function initializeWorkers() {
+  logger.info('Initializing queue workers...');
 
-  switch (type) {
-    case 'resize':
-      return await imageProcessor.resize(data);
-    case 'compress':
-      return await imageProcessor.compress(data);
-    case 'convert':
-      return await imageProcessor.convert(data);
-    case 'thumbnail':
-      return await imageProcessor.generateThumbnail(data);
-    default:
-      throw new Error(`Unknown image processing type: ${type}`);
-  }
-}, { connection });
+  // Image processing worker
+  imageProcessingQueue.process('resize', async (job) => {
+    const { imageBuffer, options } = job.data;
+    return await imageProcessor.resize({ buffer: imageBuffer, ...options });
+  });
 
-// Export Worker
-const exportWorker = new Worker('export', async (job) => {
-  const { exportId, projectId, settings, userId } = job.data;
-  logger.info(`Processing export job: ${job.id}`);
+  imageProcessingQueue.process('compress', async (job) => {
+    const { imageBuffer, options } = job.data;
+    return await imageProcessor.compress({ buffer: imageBuffer, ...options });
+  });
 
-  const Export = require('../models/Export');
-  const Project = require('../models/Project');
+  imageProcessingQueue.process('convert', async (job) => {
+    const { imageBuffer, options } = job.data;
+    return await imageProcessor.convert({ buffer: imageBuffer, ...options });
+  });
 
-  try {
-    // Update status to processing
-    await Export.findByIdAndUpdate(exportId, { 
-      status: 'processing',
-      progress: 10 
-    });
+  // Video processing worker
+  videoProcessingQueue.process('transcode', async (job) => {
+    const { videoPath, options } = job.data;
+    job.progress(10);
+    
+    const result = await videoProcessor.transcode(videoPath, options);
+    job.progress(90);
+    
+    return result;
+  });
 
-    // Get project
+  videoProcessingQueue.process('thumbnail', async (job) => {
+    const { videoPath, options } = job.data;
+    return await videoProcessor.generateThumbnail(videoPath, options);
+  });
+
+  // AI processing worker
+  aiProcessingQueue.process('background-removal', async (job) => {
+    const { imageBuffer } = job.data;
+    job.progress(20);
+    
+    // Call AI service
+    const result = await callBackgroundRemovalService(imageBuffer);
+    job.progress(90);
+    
+    return result;
+  });
+
+  aiProcessingQueue.process('enhance', async (job) => {
+    const { imageBuffer, options } = job.data;
+    job.progress(20);
+    
+    const result = await callImageEnhancementService(imageBuffer, options);
+    job.progress(90);
+    
+    return result;
+  });
+
+  aiProcessingQueue.process('face-detection', async (job) => {
+    const { imageBuffer } = job.data;
+    const { detectFaces } = require('../ai/faceDetection');
+    return await detectFaces(imageBuffer);
+  });
+
+  aiProcessingQueue.process('object-detection', async (job) => {
+    const { imageBuffer } = job.data;
+    const { detectObjects } = require('../ai/objectDetection');
+    return await detectObjects(imageBuffer);
+  });
+
+  // Export worker
+  exportQueue.process('image', async (job) => {
+    const { projectId, options } = job.data;
+    job.progress(10);
+    
     const project = await Project.findById(projectId);
-    if (!project) throw new Error('Project not found');
-
-    // Process based on type
-    let result;
-    switch (project.type) {
-      case 'image':
-        result = await imageProcessor.export(project, settings, (progress) => {
-          Export.findByIdAndUpdate(exportId, { progress });
-        });
-        break;
-      case 'video':
-        result = await videoProcessor.export(project, settings, (progress) => {
-          Export.findByIdAndUpdate(exportId, { progress });
-        });
-        break;
-      default:
-        throw new Error(`Unsupported project type: ${project.type}`);
+    if (!project) {
+      throw new Error('Project not found');
     }
-
-    // Update export with result
-    await Export.findByIdAndUpdate(exportId, {
-      status: 'completed',
-      progress: 100,
-      output: result,
-      processingTime: Date.now() - job.timestamp
-    });
-
-    // Notify user via WebSocket
-    const io = require('../app').io;
-    io.emitToUser(userId, 'export:completed', {
-      exportId,
-      projectId,
-      url: result.url
-    });
-
+    
+    job.progress(30);
+    
+    const result = await exportImage(project, options);
+    job.progress(90);
+    
     return result;
-  } catch (error) {
-    await Export.findByIdAndUpdate(exportId, {
-      status: 'failed',
-      error: { message: error.message }
-    });
-
-    const io = require('../app').io;
-    io.emitToUser(userId, 'export:failed', {
-      exportId,
-      error: error.message
-    });
-
-    throw error;
-  }
-}, { connection });
-
-// Email Worker
-const emailWorker = new Worker('email', async (job) => {
-  const { type, data } = job.data;
-  logger.info(`Processing email job: ${job.id}, type: ${type}`);
-
-  switch (type) {
-    case 'verification':
-      return await emailService.sendVerificationEmail(data.email, data.token);
-    case 'password-reset':
-      return await emailService.sendPasswordResetEmail(data.email, data.token);
-    case 'welcome':
-      return await emailService.sendWelcomeEmail(data.email, data.name);
-    default:
-      throw new Error(`Unknown email type: ${type}`);
-  }
-}, { connection });
-
-// AI Processing Worker
-const aiWorker = new Worker('ai-processing', async (job) => {
-  const { type, data, userId } = job.data;
-  logger.info(`Processing AI job: ${job.id}, type: ${type}`);
-
-  const AILog = require('../models/AILog');
-  const logId = data.logId;
-
-  try {
-    let result;
-
-    switch (type) {
-      case 'background_removal':
-        result = await aiService.backgroundRemoval.remove(data.imageBuffer);
-        break;
-      case 'upscale':
-        result = await aiService.imageUpscaling.upscale(data.imageBuffer, data.scale);
-        break;
-      case 'generate':
-        result = await aiService.imageGeneration.generate(data.options);
-        break;
-      default:
-        throw new Error(`Unknown AI processing type: ${type}`);
-    }
-
-    // Update log
-    await AILog.findByIdAndUpdate(logId, {
-      status: 'completed',
-      output: result,
-      metrics: { processingTime: Date.now() - job.timestamp }
-    });
-
-    // Notify user
-    const io = require('../app').io;
-    io.emitToUser(userId, 'ai:completed', {
-      type,
-      result: result.url || result
-    });
-
-    return result;
-  } catch (error) {
-    await AILog.findByIdAndUpdate(logId, {
-      status: 'failed',
-      error: { message: error.message }
-    });
-
-    throw error;
-  }
-}, { connection, concurrency: 2 });
-
-// Worker event handlers
-[imageWorker, exportWorker, emailWorker, aiWorker].forEach(worker => {
-  worker.on('completed', (job) => {
-    logger.info(`Job ${job.id} completed`);
   });
 
-  worker.on('failed', (job, err) => {
-    logger.error(`Job ${job?.id} failed:`, err);
+  exportQueue.process('gif', async (job) => {
+    const { projectId, options } = job.data;
+    const project = await Project.findById(projectId);
+    
+    if (!project) {
+      throw new Error('Project not found');
+    }
+    
+    return await exportGif(project, options);
   });
-});
+
+  exportQueue.process('video', async (job) => {
+    const { projectId, options } = job.data;
+    const project = await Project.findById(projectId);
+    
+    if (!project) {
+      throw new Error('Project not found');
+    }
+    
+    return await exportVideo(project, options);
+  });
+
+  // Email worker
+  emailQueue.process('welcome', async (job) => {
+    const { email, name } = job.data;
+    await emailService.sendWelcomeEmail(email, name);
+  });
+
+  emailQueue.process('verification', async (job) => {
+    const { email, token } = job.data;
+    await emailService.sendVerificationEmail(email, token);
+  });
+
+  emailQueue.process('password-reset', async (job) => {
+    const { email, token } = job.data;
+    await emailService.sendPasswordResetEmail(email, token);
+  });
+
+  emailQueue.process('notification', async (job) => {
+    const { email, subject, html } = job.data;
+    await emailService.sendEmail(email, subject, html);
+  });
+
+  // Cleanup worker
+  cleanupQueue.process('expired-uploads', async (job) => {
+    const { olderThan } = job.data;
+    await cleanupExpiredUploads(olderThan);
+  });
+
+  cleanupQueue.process('failed-jobs', async (job) => {
+    const { queues } = job.data;
+    for (const queue of queues) {
+      await queue.clean(3600000, 'failed');
+    }
+  });
+
+  logger.info('Queue workers initialized');
+}
+
+/**
+ * Call background removal service (placeholder)
+ */
+async function callBackgroundRemovalService(imageBuffer) {
+  const { removeBackground } = require('../ai/backgroundRemoval');
+  return await removeBackground(imageBuffer);
+}
+
+/**
+ * Call image enhancement service (placeholder)
+ */
+async function callImageEnhancementService(imageBuffer, options) {
+  const { enhanceImage } = require('../ai/imageEnhancement');
+  return await enhanceImage(imageBuffer, options);
+}
+
+/**
+ * Cleanup expired uploads
+ */
+async function cleanupExpiredUploads(olderThan) {
+  const cutoffDate = new Date(Date.now() - olderThan);
+  
+  // Find expired assets
+  const expiredAssets = await require('../../models/Asset').find({
+    createdAt: { $lt: cutoffDate }
+  });
+
+  // Delete from storage
+  for (const asset of expiredAssets) {
+    try {
+      await deleteFromStorage(asset.storageKey);
+      await asset.deleteOne();
+    } catch (error) {
+      logger.error(`Failed to cleanup asset ${asset._id}:`, error);
+    }
+  }
+
+  logger.info(`Cleaned up ${expiredAssets.length} expired uploads`);
+  return expiredAssets.length;
+}
+
+/**
+ * Process job progress update
+ */
+function onJobProgress(queue, jobId, progress) {
+  queue.getJob(jobId).then(job => {
+    if (job) {
+      job.progress(progress);
+    }
+  });
+}
 
 module.exports = {
-  imageWorker,
-  exportWorker,
-  emailWorker,
-  aiWorker
+  initializeWorkers,
+  onJobProgress
 };

@@ -1,118 +1,221 @@
 // backend/src/services/email/emailService.js
 const nodemailer = require('nodemailer');
-const sgMail = require('@sendgrid/mail');
+const config = require('../../config/app');
+const logger = require('../../utils/logger');
 
-// Initialize SendGrid
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-}
-
-// Nodemailer transporter for development
+// Create transporter
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.mailtrap.io',
-  port: process.env.SMTP_PORT || 587,
+  host: config.email?.smtp?.host || process.env.SMTP_HOST,
+  port: config.email?.smtp?.port || parseInt(process.env.SMTP_PORT) || 587,
+  secure: false,
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
+    user: config.email?.smtp?.user || process.env.SMTP_USER,
+    pass: config.email?.smtp?.pass || process.env.SMTP_PASS
   }
 });
 
-const sendEmail = async ({ to, subject, html, text }) => {
-  const fromEmail = process.env.FROM_EMAIL || 'noreply@aimediaeditor.com';
-  const fromName = process.env.FROM_NAME || 'AI Media Editor';
-
-  // Use SendGrid in production
-  if (process.env.NODE_ENV === 'production' && process.env.SENDGRID_API_KEY) {
-    await sgMail.send({
-      to,
-      from: { email: fromEmail, name: fromName },
-      subject,
-      html,
-      text
-    });
+// Verify transporter
+transporter.verify((error, success) => {
+  if (error) {
+    logger.warn('Email transporter verification failed:', error.message);
   } else {
-    // Use Nodemailer in development
-    await transporter.sendMail({
-      from: `${fromName} <${fromEmail}>`,
+    logger.info('Email transporter ready');
+  }
+});
+
+/**
+ * Send email
+ * @param {string} to - Recipient email
+ * @param {string} subject - Email subject
+ * @param {string} html - HTML content
+ * @param {Object} options - Additional options
+ */
+async function sendEmail(to, subject, html, options = {}) {
+  const {
+    text,
+    from = `${config.email?.fromName || 'AI Media Editor'} <${config.email?.fromAddress || 'noreply@aimediaeditor.com'}>`,
+    replyTo,
+    cc,
+    bcc,
+    attachments
+  } = options;
+
+  try {
+    const info = await transporter.sendMail({
+      from,
       to,
       subject,
+      text: text || stripHtml(html),
       html,
-      text
+      replyTo,
+      cc,
+      bcc,
+      attachments
     });
-  }
-};
 
-const sendVerificationEmail = async (email, token) => {
-  const verifyUrl = `${process.env.FRONTEND_URL}/verify-email/${token}`;
+    logger.info(`Email sent to ${to}: ${info.messageId}`);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    logger.error('Failed to send email:', error);
+    throw new Error(`Email send failed: ${error.message}`);
+  }
+}
+
+/**
+ * Send welcome email
+ */
+async function sendWelcomeEmail(to, name) {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+        .button { display: inline-block; background: #6366f1; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin-top: 20px; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Welcome to AI Media Editor!</h1>
+        </div>
+        <div class="content">
+          <p>Hi ${name || 'there'},</p>
+          <p>Welcome to AI Media Editor! We're excited to have you on board.</p>
+          <p>Get started with:</p>
+          <ul>
+            <li>🎨 Professional image editing tools</li>
+            <li>🤖 AI-powered background removal and enhancement</li>
+            <li>📹 Video editing and effects</li>
+            <li>🎵 Audio processing and editing</li>
+          </ul>
+          <a href="${config.frontendUrl}/editor" class="button">Start Editing</a>
+        </div>
+        <div class="footer">
+          <p>© ${new Date().getFullYear()} AI Media Editor. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return await sendEmail(to, 'Welcome to AI Media Editor!', html);
+}
+
+/**
+ * Send verification email
+ */
+async function sendVerificationEmail(to, token) {
+  const verificationUrl = `${config.frontendUrl}/verify-email/${token}`;
   
-  await sendEmail({
-    to: email,
-    subject: 'Verify your email - AI Media Editor',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #6366f1;">Welcome to AI Media Editor!</h1>
-        <p>Please verify your email address by clicking the button below:</p>
-        <a href="${verifyUrl}" style="display: inline-block; padding: 12px 24px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">
-          Verify Email
-        </a>
-        <p>Or copy and paste this link in your browser:</p>
-        <p style="color: #666;">${verifyUrl}</p>
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .button { display: inline-block; background: #6366f1; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h2>Verify Your Email</h2>
+        <p>Click the button below to verify your email address:</p>
+        <a href="${verificationUrl}" class="button">Verify Email</a>
+        <p>Or copy and paste this link: ${verificationUrl}</p>
         <p>This link expires in 24 hours.</p>
       </div>
-    `,
-    text: `Welcome to AI Media Editor! Verify your email: ${verifyUrl}`
-  });
-};
+    </body>
+    </html>
+  `;
 
-const sendPasswordResetEmail = async (email, token) => {
-  const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+  return await sendEmail(to, 'Verify Your Email Address', html);
+}
+
+/**
+ * Send password reset email
+ */
+async function sendPasswordResetEmail(to, token) {
+  const resetUrl = `${config.frontendUrl}/reset-password/${token}`;
   
-  await sendEmail({
-    to: email,
-    subject: 'Reset your password - AI Media Editor',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #6366f1;">Password Reset</h1>
-        <p>You requested to reset your password. Click the button below:</p>
-        <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">
-          Reset Password
-        </a>
-        <p>Or copy and paste this link in your browser:</p>
-        <p style="color: #666;">${resetUrl}</p>
-        <p>This link expires in 1 hour. If you didn't request this, please ignore this email.</p>
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .button { display: inline-block; background: #6366f1; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; }
+        .warning { background: #fef3c7; padding: 15px; border-radius: 6px; margin-top: 20px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h2>Password Reset Request</h2>
+        <p>We received a request to reset your password. Click the button below to reset it:</p>
+        <a href="${resetUrl}" class="button">Reset Password</a>
+        <p>Or copy and paste this link: ${resetUrl}</p>
+        <p>This link expires in 1 hour.</p>
+        <div class="warning">
+          <strong>Didn't request this?</strong> If you didn't request a password reset, you can safely ignore this email.
+        </div>
       </div>
-    `,
-    text: `Reset your password: ${resetUrl}`
-  });
-};
+    </body>
+    </html>
+  `;
 
-const sendWelcomeEmail = async (email, name) => {
-  await sendEmail({
-    to: email,
-    subject: 'Welcome to AI Media Editor! 🎨',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #6366f1;">Welcome, ${name}! 🎉</h1>
-        <p>Thanks for joining AI Media Editor. We're excited to have you!</p>
-        <h2>Get Started:</h2>
-        <ul>
-          <li>🖼️ Upload your first image</li>
-          <li>✨ Try AI-powered enhancements</li>
-          <li>🎨 Explore filters and effects</li>
-          <li>📤 Export in any format</li>
-        </ul>
-        <a href="${process.env.FRONTEND_URL}/editor" style="display: inline-block; padding: 12px 24px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">
-          Start Creating
-        </a>
+  return await sendEmail(to, 'Password Reset Request', html);
+}
+
+/**
+ * Send payment failed notification
+ */
+async function sendPaymentFailedEmail(to, name) {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; }
+        .button { display: inline-block; background: #6366f1; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="warning">
+          <h2>Payment Failed</h2>
+        </div>
+        <p>Hi ${name || 'there'},</p>
+        <p>We were unable to process your payment for your AI Media Editor subscription.</p>
+        <p>Please update your payment information to continue enjoying uninterrupted access.</p>
+        <a href="${config.frontendUrl}/settings/billing" class="button">Update Payment Method</a>
       </div>
-    `,
-    text: `Welcome to AI Media Editor, ${name}! Start creating: ${process.env.FRONTEND_URL}/editor`
-  });
-};
+    </body>
+    </html>
+  `;
+
+  return await sendEmail(to, 'Payment Failed - Action Required', html);
+}
+
+/**
+ * Strip HTML tags from string
+ */
+function stripHtml(html) {
+  return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+}
 
 module.exports = {
   sendEmail,
+  sendWelcomeEmail,
   sendVerificationEmail,
   sendPasswordResetEmail,
-  sendWelcomeEmail
+  sendPaymentFailedEmail,
+  transporter
 };
