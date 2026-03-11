@@ -1,278 +1,276 @@
 // frontend/src/components/ui/FileUpload.jsx
-import React, { useCallback, useState } from 'react';
-import { useDropzone } from 'react-dropzone';
+import React, { useCallback, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, X, File, Image, Video, Music, AlertCircle } from 'lucide-react';
+import { Upload, File, Image, X, Check } from 'lucide-react';
 import { cn } from '@/utils/helpers/cn';
-import ProgressBar from './ProgressBar';
-
-const fileTypeIcons = {
-  image: Image,
-  video: Video,
-  audio: Music,
-  default: File
-};
-
-function getFileType(file) {
-  if (file.type.startsWith('image/')) return 'image';
-  if (file.type.startsWith('video/')) return 'video';
-  if (file.type.startsWith('audio/')) return 'audio';
-  return 'default';
-}
-
-function formatFileSize(bytes) {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
 
 export default function FileUpload({
   accept,
   multiple = false,
-  maxFiles = 10,
-  maxSize = 50 * 1024 * 1024, // 50MB
-  onUpload,
-  onError,
+  maxSize,
+  onFileSelect,
+  onFileRemove,
+  files = [],
+  className,
+  dragText = 'Drag & drop files here',
+  browseText = 'Browse',
+  description,
+  disabled = false,
   showPreview = true,
-  className
+  compact = false
 }) {
-  const [files, setFiles] = useState([]);
-  const [uploadProgress, setUploadProgress] = useState({});
-  const [errors, setErrors] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [error, setError] = useState(null);
+  const inputRef = useRef(null);
 
-  const onDrop = useCallback(async (acceptedFiles, rejectedFiles) => {
-    // Handle rejected files
-    if (rejectedFiles.length > 0) {
-      const newErrors = rejectedFiles.map(({ file, errors }) => ({
-        name: file.name,
-        message: errors[0]?.message || 'File rejected'
-      }));
-      setErrors(newErrors);
-      onError?.(newErrors);
+  const validateFile = (file) => {
+    if (maxSize && file.size > maxSize) {
+      return `File size exceeds ${formatFileSize(maxSize)}`;
     }
-
-    // Add new files
-    const newFiles = acceptedFiles.map((file) => ({
-      file,
-      id: `${file.name}-${Date.now()}`,
-      preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null,// frontend/src/components/ui/FileUpload.jsx (continued)
-      type: getFileType(file),
-      status: 'pending'
-    }));
-
-    setFiles((prev) => [...prev, ...newFiles]);
-    setErrors([]);
-
-    // Upload files
-    for (const fileData of newFiles) {
-      try {
-        setUploadProgress((prev) => ({ ...prev, [fileData.id]: 0 }));
-        
-        // Simulate upload progress (replace with actual upload)
-        await simulateUpload(fileData.id, (progress) => {
-          setUploadProgress((prev) => ({ ...prev, [fileData.id]: progress }));
-        });
-
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === fileData.id ? { ...f, status: 'complete' } : f
-          )
-        );
-
-        onUpload?.(fileData.file);
-      } catch (error) {
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === fileData.id ? { ...f, status: 'error' } : f
-          )
-        );
-      }
-    }
-  }, [onUpload, onError]);
-
-  const simulateUpload = (id, onProgress) => {
-    return new Promise((resolve) => {
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += Math.random() * 30;
-        if (progress >= 100) {
-          progress = 100;
-          clearInterval(interval);
-          resolve();
-        }
-        onProgress(progress);
-      }, 200);
-    });
+    return null;
   };
 
-  const removeFile = (id) => {
-    setFiles((prev) => {
-      const file = prev.find((f) => f.id === id);
-      if (file?.preview) {
-        URL.revokeObjectURL(file.preview);
+  const handleFiles = useCallback((fileList) => {
+    const newFiles = Array.from(fileList);
+    const errors = [];
+
+    const validFiles = newFiles.filter((file) => {
+      const error = validateFile(file);
+      if (error) {
+        errors.push(`${file.name}: ${error}`);
+        return false;
       }
-      return prev.filter((f) => f.id !== id);
+      return true;
     });
-    setUploadProgress((prev) => {
-      const newProgress = { ...prev };
-      delete newProgress[id];
-      return newProgress;
-    });
+
+    if (errors.length > 0) {
+      setError(errors.join(', '));
+      setTimeout(() => setError(null), 5000);
+    }
+
+    if (validFiles.length > 0) {
+      onFileSelect?.(validFiles);
+    }
+  }, [maxSize, onFileSelect]);
+
+  const handleDrag = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDragIn = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      setIsDragging(true);
+    }
+  }, []);
+
+  const handleDragOut = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFiles(e.dataTransfer.files);
+    }
+  }, [handleFiles]);
+
+  const handleClick = () => {
+    inputRef.current?.click();
   };
 
-  const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
-    onDrop,
-    accept,
-    multiple,
-    maxFiles,
-    maxSize
-  });
+  const handleInputChange = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleFiles(e.target.files);
+    }
+  };
 
-  return (
-    <div className={cn('w-full', className)}>
-      {/* Drop Zone */}
-      <div
-        {...getRootProps()}
-        className={cn(
-          'relative border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all',
-          'hover:border-primary-500/50 hover:bg-primary-500/5',
-          isDragActive && 'border-primary-500 bg-primary-500/10 scale-[1.02]',
-          isDragReject && 'border-red-500 bg-red-500/10',
-          'border-surface-700 bg-surface-800/30'
-        )}
-      >
-        <input {...getInputProps()} />
-        
-        <motion.div
-          initial={false}
-          animate={{ scale: isDragActive ? 1.1 : 1 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-          className="flex flex-col items-center"
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getFileIcon = (file) => {
+    if (file.type?.startsWith('image/')) return Image;
+    return File;
+  };
+
+  if (compact) {
+    return (
+      <div className={cn('space-y-2', className)}>
+        <input
+          ref={inputRef}
+          type="file"
+          accept={accept}
+          multiple={multiple}
+          onChange={handleInputChange}
+          className="hidden"
+          disabled={disabled}
+        />
+        <button
+          onClick={handleClick}
+          disabled={disabled}
+          className={cn(
+            'flex items-center gap-2 px-4 py-2 rounded-lg',
+            'bg-primary-500/10 text-primary-300 border border-primary-500/30',
+            'hover:bg-primary-500/20 transition-colors',
+            'disabled:opacity-50 disabled:cursor-not-allowed'
+          )}
         >
-          <div className={cn(
-            'w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-colors',
-            isDragActive ? 'bg-primary-500/20' : 'bg-surface-700/50'
-          )}>
-            <Upload className={cn(
-              'w-8 h-8 transition-colors',
-              isDragActive ? 'text-primary-400' : 'text-surface-400'
-            )} />
-          </div>
-          
-          <h3 className="text-lg font-semibold text-white mb-2">
-            {isDragActive ? 'Drop files here' : 'Drag & drop files here'}
-          </h3>
-          
-          <p className="text-sm text-surface-400 mb-4">
-            or click to browse from your device
-          </p>
-          
-          <div className="flex items-center gap-4 text-xs text-surface-500">
-            <span>Max size: {formatFileSize(maxSize)}</span>
-            {maxFiles > 1 && <span>Max files: {maxFiles}</span>}
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Errors */}
-      <AnimatePresence>
-        {errors.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="mt-4"
-          >
-            {errors.map((error, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm mb-2"
-              >
-                <AlertCircle className="w-4 h-4" />
-                <span>{error.name}: {error.message}</span>
-              </div>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* File List */}
-      {showPreview && files.length > 0 && (
-        <div className="mt-6 space-y-3">
-          <AnimatePresence>
-            {files.map((fileData) => {
-              const Icon = fileTypeIcons[fileData.type];
-              const progress = uploadProgress[fileData.id] || 0;
-
+          <Upload className="w-4 h-4" />
+          <span className="text-sm font-medium">{browseText}</span>
+        </button>
+        {files.length > 0 && showPreview && (
+          <div className="space-y-2">
+            {files.map((file, index) => {
+              const FileIcon = getFileIcon(file);
               return (
-                <motion.div
-                  key={fileData.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: -100 }}
-                  className={cn(
-                    'flex items-center gap-4 p-4 rounded-xl border',
-                    'bg-editor-card border-editor-border'
-                  )}
+                <div
+                  key={index}
+                  className="flex items-center gap-3 p-2 rounded-lg bg-editor-card border border-editor-border"
                 >
-                  {/* Preview/Icon */}
-                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-surface-800 flex items-center justify-center flex-shrink-0">
-                    {fileData.preview ? (
-                      <img
-                        src={fileData.preview}
-                        alt={fileData.file.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <Icon className="w-6 h-6 text-surface-400" />
-                    )}
-                  </div>
-
-                  {/* File Info */}
+                  <FileIcon className="w-4 h-4 text-surface-400" />
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-white truncate">
-                      {fileData.file.name}
-                    </p>
-                    <p className="text-xs text-surface-500">
-                      {formatFileSize(fileData.file.size)}
-                    </p>
-                    
-                    {/* Progress */}
-                    {fileData.status === 'pending' && (
-                      <div className="mt-2">
-                        <ProgressBar value={progress} size="xs" />
-                      </div>
-                    )}
+                    <p className="text-sm text-white truncate">{file.name}</p>
+                    <p className="text-xs text-surface-500">{formatFileSize(file.size)}</p>
                   </div>
-
-                  {/* Status/Actions */}
-                  <div className="flex items-center gap-2">
-                    {fileData.status === 'complete' && (
-                      <span className="text-emerald-400 text-sm font-medium">
-                        ✓ Uploaded
-                      </span>
-                    )}
-                    {fileData.status === 'error' && (
-                      <span className="text-red-400 text-sm font-medium">
-                        Failed
-                      </span>
-                    )}
-                    
+                  {onFileRemove && (
                     <button
-                      onClick={() => removeFile(fileData.id)}
-                      className="p-2 rounded-lg text-surface-500 hover:text-white hover:bg-white/5 transition-colors"
+                      onClick={() => onFileRemove?.(index)}
+                      className="p-1 rounded hover:bg-white/5"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-4 h-4 text-surface-400" />
                     </button>
-                  </div>
-                </motion.div>
+                  )}
+                </div>
               );
             })}
-          </AnimatePresence>
+          </div>
+        )}
+        {error && (
+          <p className="text-sm text-rose-400">{error}</p>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn('space-y-3', className)}>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={accept}
+        multiple={multiple}
+        onChange={handleInputChange}
+        className="hidden"
+        disabled={disabled}
+      />
+
+      <motion.div
+        onDragEnter={handleDragIn}
+        onDragLeave={handleDragOut}
+        onDragOver={handleDrag}
+        onDrop={handleDrop}
+        onClick={handleClick}
+        className={cn(
+          'relative border-2 border-dashed rounded-xl p-8',
+          'transition-all duration-200 cursor-pointer',
+          'hover:border-primary-500/50 hover:bg-primary-500/5',
+          isDragging && 'border-primary-500 bg-primary-500/10',
+          disabled && 'opacity-50 cursor-not-allowed',
+          'border-editor-border bg-editor-card/50'
+        )}
+      >
+        <div className="flex flex-col items-center text-center">
+          <motion.div
+            animate={isDragging ? { scale: 1.1, y: -5 } : {}}
+            className={cn(
+              'w-12 h-12 rounded-xl flex items-center justify-center mb-4',
+              isDragging
+                ? 'bg-primary-500/20 text-primary-400'
+                : 'bg-surface-700 text-surface-400'
+            )}
+          >
+            <Upload className="w-6 h-6" />
+          </motion.div>
+          <p className="text-sm font-medium text-white mb-1">{dragText}</p>
+          <p className="text-xs text-surface-500 mb-4">
+            or <span className="text-primary-400 underline">{browseText}</span>
+          </p>
+          {description && (
+            <p className="text-xs text-surface-600">{description}</p>
+          )}
+          {maxSize && (
+            <p className="text-xs text-surface-600 mt-2">
+              Max size: {formatFileSize(maxSize)}
+            </p>
+          )}
+        </div>
+      </motion.div>
+
+      {files.length > 0 && showPreview && (
+        <div className="space-y-2">
+          {files.map((file, index) => {
+            const FileIcon = getFileIcon(file);
+            return (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="flex items-center gap-3 p-3 rounded-lg bg-editor-card border border-editor-border"
+              >
+                <div className={cn(
+                  'w-10 h-10 rounded-lg flex items-center justify-center',
+                  file.type?.startsWith('image/')
+                    ? 'bg-primary-500/10 text-primary-400'
+                    : 'bg-surface-700 text-surface-400'
+                )}>
+                  <FileIcon className="w-5 h-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-white truncate">{file.name}</p>
+                  <p className="text-xs text-surface-500">{formatFileSize(file.size)}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-400" />
+                  {onFileRemove && (
+                    <button
+                      onClick={() => onFileRemove?.(index)}
+                      className="p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+                    >
+                      <X className="w-4 h-4 text-surface-400" />
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       )}
+
+      <AnimatePresence>
+        {error && (
+          <motion.p
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="text-sm text-rose-400"
+          >
+            {error}
+          </motion.p>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

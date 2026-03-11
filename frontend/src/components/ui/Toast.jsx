@@ -1,96 +1,101 @@
 // frontend/src/components/ui/Toast.jsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, AlertCircle, Info, X, AlertTriangle } from 'lucide-react';
+import { X, CheckCircle2, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 import { cn } from '@/utils/helpers/cn';
 
-const icons = {
-  success: CheckCircle,
+const toastIcons = {
+  success: CheckCircle2,
   error: AlertCircle,
   warning: AlertTriangle,
   info: Info
 };
 
-const variants = {
-  success: 'border-emerald-500/30 bg-emerald-500/10',
-  error: 'border-red-500/30 bg-red-500/10',
-  warning: 'border-amber-500/30 bg-amber-500/10',
-  info: 'border-blue-500/30 bg-blue-500/10'
+const toastVariants = {
+  success: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300',
+  error: 'bg-rose-500/10 border-rose-500/30 text-rose-300',
+  warning: 'bg-amber-500/10 border-amber-500/30 text-amber-300',
+  info: 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300'
 };
 
-const iconColors = {
-  success: 'text-emerald-400',
-  error: 'text-red-400',
-  warning: 'text-amber-400',
-  info: 'text-blue-400'
-};
-
-export function Toast({
+export default function Toast({
+  id,
   message,
   type = 'info',
-  title,
-  onClose,
+  duration = 5000,
+  onDismiss,
   action,
-  className
+  position = 'top-right'
 }) {
-  const Icon = icons[type];
+  useEffect(() => {
+    if (duration !== null) {
+      const timer = setTimeout(() => {
+        onDismiss?.(id);
+      }, duration);
+
+      return () => clearTimeout(timer);
+    }
+  }, [id, duration, onDismiss]);
+
+  const Icon = toastIcons[type];
+
+  const positionClasses = {
+    'top-right': 'top-4 right-4',
+    'top-left': 'top-4 left-4',
+    'top-center': 'top-4 left-1/2 -translate-x-1/2',
+    'bottom-right': 'bottom-4 right-4',
+    'bottom-left': 'bottom-4 left-4',
+    'bottom-center': 'bottom-4 left-1/2 -translate-x-1/2'
+  };
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: 100, scale: 0.9 }}
-      animate={{ opacity: 1, x: 0, scale: 1 }}
+      initial={{ opacity: 0, y: -20, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, x: 100, scale: 0.9 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       className={cn(
-        'flex items-start gap-3 p-4 rounded-xl border shadow-elevated max-w-sm',
-        'bg-editor-card backdrop-blur-xl',
-        variants[type],
-        className
+        'flex items-center gap-3 px-4 py-3 rounded-xl border backdrop-blur-xl shadow-elevated',
+        'min-w-[300px] max-w-md',
+        toastVariants[type],
+        positionClasses[position]
       )}
     >
-      <Icon className={cn('w-5 h-5 mt-0.5 flex-shrink-0', iconColors[type])} />
-      
-      <div className="flex-1 min-w-0">
-        {title && (
-          <h4 className="font-semibold text-white mb-1">{title}</h4>
-        )}
-        <p className="text-sm text-surface-300">{message}</p>
-        
-        {action && (
-          <button
-            onClick={action.onClick}
-            className={cn(
-              'mt-2 text-sm font-medium transition-colors',
-              iconColors[type],
-              'hover:underline'
-            )}
-          >
-            {action.label}
-          </button>
-        )}
-      </div>
-
-      {onClose && (
+      <Icon className="w-5 h-5 flex-shrink-0" />
+      <p className="flex-1 text-sm font-medium">{message}</p>
+      {action && (
         <button
-          onClick={onClose}
-          className="flex-shrink-0 p-1 text-surface-500 hover:text-white transition-colors"
+          onClick={action.onClick}
+          className="px-3 py-1 text-xs font-medium rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
         >
-          <X className="w-4 h-4" />
+          {action.label}
         </button>
       )}
+      <button
+        onClick={() => onDismiss?.(id)}
+        className="p-1 rounded-lg hover:bg-white/10 transition-colors"
+      >
+        <X className="w-4 h-4" />
+      </button>
     </motion.div>
   );
 }
 
-export function ToastContainer({ toasts, removeToast }) {
+// Toast Container
+export function ToastContainer({ toasts, onDismiss, position = 'top-right' }) {
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
-      <AnimatePresence mode="popLayout">
+    <div
+      className={cn(
+        'fixed z-[100] flex flex-col gap-2',
+        position === 'top-right' && 'top-4 right-4',
+        position === 'top-left' && 'top-4 left-4',
+        position === 'bottom-right' && 'bottom-4 right-4',
+        position === 'bottom-left' && 'bottom-4 left-4'
+      )}
+    >
+      <AnimatePresence>
         {toasts.map((toast) => (
-          <Toast
-            key={toast.id}
-            {...toast}
-            onClose={() => removeToast(toast.id)}
-          />
+          <Toast key={toast.id} {...toast} onDismiss={onDismiss} position={position} />
         ))}
       </AnimatePresence>
     </div>

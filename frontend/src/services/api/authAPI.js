@@ -2,52 +2,88 @@
 import apiClient from './apiClient';
 
 export const authAPI = {
-  login: async (email, password) => {
-    const response = await apiClient.post('/auth/login', { email, password });
-    return response.data;
+  // Register new user
+  async register(name, email, password) {
+    const response = await apiClient.post('/auth/register', {
+      name,
+      email,
+      password
+    });
+    return response.data.data;
   },
 
-  register: async (name, email, password) => {
-    const response = await apiClient.post('/auth/register', { name, email, password });
-    return response.data;
+  // Login
+  async login(email, password) {
+    const response = await apiClient.post('/auth/login', {
+      email,
+      password
+    });
+    return response.data.data;
   },
 
-  logout: async () => {
-    const response = await apiClient.post('/auth/logout');
-    return response.data;
+  // Logout
+  async logout() {
+    const refreshToken = localStorage.getItem('refreshToken');
+    const response = await apiClient.post('/auth/logout', { refreshToken });
+    return response.data.data;
   },
 
-  getCurrentUser: async () => {
+  // Get current user
+  async getCurrentUser() {
     const response = await apiClient.get('/auth/me');
-    return response.data;
+    return response.data.data.user;
   },
 
-  updateProfile: async (data) => {
+  // Update profile
+  async updateProfile(data) {
     const response = await apiClient.put('/auth/profile', data);
-    return response.data;
+    return response.data.data.user;
   },
 
-  changePassword: async (currentPassword, newPassword) => {
+  // Change password
+  async changePassword(currentPassword, newPassword) {
     const response = await apiClient.put('/auth/password', {
       currentPassword,
       newPassword
     });
-    return response.data;
+    return response.data.data;
   },
 
-  forgotPassword: async (email) => {
+  // Forgot password
+  async forgotPassword(email) {
     const response = await apiClient.post('/auth/forgot-password', { email });
-    return response.data;
+    return response.data.data;
   },
 
-  resetPassword: async (token, password) => {
-    const response = await apiClient.post('/auth/reset-password', { token, password });
-    return response.data;
+  // Reset password
+  async resetPassword(token, password) {
+    const response = await apiClient.post(`/auth/reset-password/${token}`, {
+      password
+    });
+    return response.data.data;
   },
 
-  verifyEmail: async (token) => {
-    const response = await apiClient.post('/auth/verify-email', { token });
-    return response.data;
+  // Verify email
+  async verifyEmail(token) {
+    const response = await apiClient.post(`/auth/verify-email/${token}`);
+    return response.data.data;
+  },
+
+  // Resend verification email
+  async resendVerification() {
+    const response = await apiClient.post('/auth/resend-verification');
+    return response.data.data;
+  },
+
+  // Refresh token
+  async refreshToken(refreshToken) {
+    const response = await apiClient.post('/auth/refresh-token', { refreshToken });
+    return response.data.data;
+  },
+
+  // Google OAuth
+  googleLoginUrl() {
+    return `${apiClient.defaults.baseURL}/auth/google`;
   }
 };
 

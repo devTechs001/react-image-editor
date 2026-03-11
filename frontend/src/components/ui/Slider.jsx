@@ -1,117 +1,78 @@
 // frontend/src/components/ui/Slider.jsx
-import React, { forwardRef } from 'react';
+import React from 'react';
 import * as SliderPrimitive from '@radix-ui/react-slider';
 import { cn } from '@/utils/helpers/cn';
 
-const Slider = forwardRef(({
+export default function Slider({
   className,
-  label,
   value,
-  onValueChange,
+  defaultValue,
   min = 0,
   max = 100,
   step = 1,
-  showValue = true,
-  valuePrefix = '',
-  valueSuffix = '',
-  variant = 'default',
-  size = 'md',
+  disabled = false,
+  showTooltip = false,
+  label,
+  formatValue,
+  onValueChange,
   ...props
-}, ref) => {
-  const currentValue = value?.[0] ?? 0;
+}) {
+  const [localValue, setLocalValue] = React.useState(value || defaultValue || [min]);
+  const [isDragging, setIsDragging] = React.useState(false);
 
-  const trackSizes = {
-    sm: 'h-1',
-    md: 'h-2',
-    lg: 'h-3'
+  const handleValueChange = (newValue) => {
+    setLocalValue(newValue);
+    onValueChange?.(newValue);
   };
 
-  const thumbSizes = {
-    sm: 'h-3 w-3',
-    md: 'h-4 w-4',
-    lg: 'h-5 w-5'
-  };
-
-  const variants = {
-    default: {
-      track: 'bg-surface-700',
-      range: 'bg-gradient-to-r from-primary-500 to-secondary-500',
-      thumb: 'bg-white border-2 border-primary-500'
-    },
-    success: {
-      track: 'bg-surface-700',
-      range: 'bg-gradient-to-r from-emerald-500 to-teal-500',
-      thumb: 'bg-white border-2 border-emerald-500'
-    },
-    warning: {
-      track: 'bg-surface-700',
-      range: 'bg-gradient-to-r from-amber-500 to-orange-500',
-      thumb: 'bg-white border-2 border-amber-500'
-    },
-    danger: {
-      track: 'bg-surface-700',
-      range: 'bg-gradient-to-r from-red-500 to-rose-500',
-      thumb: 'bg-white border-2 border-red-500'
-    }
-  };
-
-  const variantStyles = variants[variant];
+  const currentValue = value !== undefined ? value : localValue;
 
   return (
     <div className={cn('w-full', className)}>
-      {(label || showValue) && (
+      {(label || showTooltip) && (
         <div className="flex items-center justify-between mb-2">
-          {label && (
-            <span className="text-sm font-medium text-surface-300">{label}</span>
-          )}
-          {showValue && (
-            <span className="text-sm font-mono text-primary-400">
-              {valuePrefix}{currentValue}{valueSuffix}
+          {label && <label className="text-sm font-medium text-surface-300">{label}</label>}
+          {showTooltip && (
+            <span className="text-xs font-mono text-primary-300 bg-primary-500/10 px-2 py-0.5 rounded">
+              {formatValue ? formatValue(currentValue[0]) : currentValue[0]}
             </span>
           )}
         </div>
       )}
-
       <SliderPrimitive.Root
-        ref={ref}
-        className="relative flex w-full touch-none select-none items-center"
-        value={value}
-        onValueChange={onValueChange}
+        className={cn(
+          'relative flex w-full touch-none select-none items-center',
+          disabled && 'opacity-50 cursor-not-allowed'
+        )}
+        value={currentValue}
+        onValueChange={handleValueChange}
+        onPointerDown={() => setIsDragging(true)}
+        onPointerUp={() => setIsDragging(false)}
         min={min}
         max={max}
         step={step}
+        disabled={disabled}
         {...props}
       >
-        <SliderPrimitive.Track
-          className={cn(
-            'relative w-full grow overflow-hidden rounded-full',
-            trackSizes[size],
-            variantStyles.track
-          )}
-        >
+        <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-surface-700">
           <SliderPrimitive.Range
-            className={cn(
-              'absolute h-full rounded-full',
-              variantStyles.range
-            )}
+            className="absolute h-full bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full"
+            style={{
+              background: isDragging
+                ? 'linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%)'
+                : undefined
+            }}
           />
         </SliderPrimitive.Track>
-        
         <SliderPrimitive.Thumb
           className={cn(
-            'block rounded-full shadow-lg ring-offset-editor-bg transition-all',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2',
-            'hover:scale-110 active:scale-95',
-            'cursor-grab active:cursor-grabbing',
-            thumbSizes[size],
-            variantStyles.thumb
+            'block h-5 w-5 rounded-full border-2 border-primary-500 bg-editor-card',
+            'shadow-glow transition-all duration-150',
+            'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-editor-bg',
+            isDragging && 'scale-125 shadow-glow-lg'
           )}
         />
       </SliderPrimitive.Root>
     </div>
   );
-});
-
-Slider.displayName = 'Slider';
-
-export default Slider;
+}

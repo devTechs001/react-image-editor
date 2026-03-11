@@ -1,74 +1,96 @@
 // frontend/src/components/ui/LoadingSpinner.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 import { cn } from '@/utils/helpers/cn';
 
-const sizes = {
-  xs: 'h-4 w-4 border-2',
-  sm: 'h-6 w-6 border-2',
-  md: 'h-8 w-8 border-2',
-  lg: 'h-12 w-12 border-3',
-  xl: 'h-16 w-16 border-4'
+const spinnerSizes = {
+  xs: 'w-3 h-3',
+  sm: 'w-4 h-4',
+  md: 'w-6 h-6',
+  lg: 'w-8 h-8',
+  xl: 'w-12 h-12'
 };
 
 export default function LoadingSpinner({
   size = 'md',
-  color = 'primary',
   className,
-  label
+  text,
+  variant = 'primary',
+  fullscreen = false
 }) {
-  const colorClasses = {
-    primary: 'border-primary-500',
-    secondary: 'border-secondary-500',
-    white: 'border-white',
-    current: 'border-current'
+  const variantColors = {
+    primary: 'text-primary-400',
+    secondary: 'text-surface-400',
+    white: 'text-white'
   };
 
+  if (fullscreen) {
+    return (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="flex flex-col items-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          >
+            <Loader2 className={cn(spinnerSizes[size], variantColors[variant])} />
+          </motion.div>
+          {text && (
+            <p className="mt-4 text-sm text-white font-medium">{text}</p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={cn('flex flex-col items-center justify-center gap-3', className)}>
+    <div className={cn('flex items-center justify-center', className)}>
       <motion.div
-        className={cn(
-          'rounded-full border-t-transparent',
-          sizes[size],
-          colorClasses[color]
-        )}
         animate={{ rotate: 360 }}
-        transition={{
-          duration: 1,
-          repeat: Infinity,
-          ease: 'linear'
-        }}
-      />
-      {label && (
-        <span className="text-sm text-surface-400">{label}</span>
+        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+        className={cn(spinnerSizes[size], variantColors[variant])}
+      >
+        <Loader2 />
+      </motion.div>
+      {text && (
+        <p className="ml-2 text-sm text-surface-400">{text}</p>
       )}
     </div>
   );
 }
 
-// Full screen loading
-export function LoadingScreen({ message = 'Loading...' }) {
+// Skeleton loader
+export function Skeleton({ className, variant = 'rect', width, height }) {
+  const variants = {
+    rect: 'rounded-lg',
+    circular: 'rounded-full',
+    text: 'rounded'
+  };
+
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-editor-bg z-50">
-      <div className="text-center">
-        <motion.div
-          className="relative w-20 h-20 mx-auto mb-6"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-        >
-          <div className="absolute inset-0 rounded-full border-4 border-primary-500/20" />
-          <div className="absolute inset-0 rounded-full border-4 border-t-primary-500 border-r-transparent border-b-transparent border-l-transparent" />
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <h3 className="text-lg font-semibold text-white mb-2">{message}</h3>
-          <p className="text-sm text-surface-500">Please wait...</p>
-        </motion.div>
-      </div>
+    <motion.div
+      initial={{ opacity: 0.6 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className={cn(
+        'bg-surface-700 animate-pulse',
+        variants[variant],
+        className
+      )}
+      style={{ width, height }}
+    />
+  );
+}
+
+// Card skeleton
+export function SkeletonCard({ lines = 3 }) {
+  return (
+    <div className="space-y-3">
+      <Skeleton className="h-32 w-full" />
+      <Skeleton className="h-4 w-3/4" />
+      {Array.from({ length: lines }).map((_, i) => (
+        <Skeleton key={i} className="h-3 w-full" />
+      ))}
     </div>
   );
 }
