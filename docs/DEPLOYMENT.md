@@ -1,416 +1,292 @@
-# 🚀 Deployment Guide
+# Deployment Guide
+
+This document provides instructions for deploying the AI Media Editor to various platforms.
 
 ## Table of Contents
-1. [Frontend Deployment](#frontend-deployment)
-2. [Backend Deployment](#backend-deployment)
-3. [Database Setup](#database-setup)
-4. [Docker Deployment](#docker-deployment)
-5. [CI/CD Pipeline](#cicd-pipeline)
 
-## Frontend Deployment
+- [GitHub Pages](#github-pages)
+- [Netlify](#netlify)
+- [Vercel](#vercel)
+- [Render](#render)
+- [Docker](#docker)
 
-### Vercel (Recommended for Frontend)
+---
+
+## GitHub Pages
+
+GitHub Pages is suitable for the frontend only. You'll need to host the backend separately.
+
+### Setup Steps
+
+1. **Configure Backend URL**
+   - Set up your backend on Render, Railway, or another platform
+   - Note the backend URL
+
+2. **Enable GitHub Pages**
+   - Go to Repository Settings → Pages
+   - Source: GitHub Actions
+   - Click "Save"
+
+3. **Configure Environment Variables**
+   - Go to Repository Settings → Actions → Variables
+   - Add `VITE_API_URL` with your backend URL
+
+4. **Deploy**
+   - Push to `main` branch
+   - The workflow will automatically deploy
+
+### Manual Deployment
 
 ```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Deploy
 cd frontend
-vercel --prod
+npm install
+npm run build
+# Upload dist/ folder to GitHub Pages
 ```
 
-vercel.json:
+---
 
-```json
-{
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite",
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://api.yourdomain.com/api/$1" }
-  ],
-  "headers": [
-    {
-      "source": "/assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    }
-  ]
-}
-```
+## Netlify
 
-### Netlify
+Netlify provides free hosting with automatic deployments from Git.
+
+### Setup Steps
+
+1. **Connect Repository**
+   - Sign in to [Netlify](https://netlify.com)
+   - Click "Add new site" → "Import from Git"
+   - Select your repository
+
+2. **Configure Build Settings**
+   - Base directory: `frontend`
+   - Build command: `npm run build`
+   - Publish directory: `dist`
+
+3. **Set Environment Variables**
+   ```
+   VITE_API_URL=https://your-backend-url.com
+   ```
+
+4. **Deploy**
+   - Click "Deploy site"
+   - Netlify will build and deploy automatically
+
+### Using netlify.toml
+
+The included `netlify.toml` file configures:
+- Build settings
+- Redirects for SPA routing
+- API proxying
+- Security headers
+- Cache headers
 
 ```bash
 # Install Netlify CLI
-npm i -g netlify-cli
+npm install -g netlify-cli
 
-# Deploy
-cd frontend
+# Deploy manually
 netlify deploy --prod
 ```
 
-netlify.toml:
+---
 
-```toml
-[build]
-  command = "npm run build"
-  publish = "dist"
+## Vercel
 
-[[redirects]]
-  from = "/api/*"
-  to = "https://api.yourdomain.com/api/:splat"
-  status = 200
+Vercel offers excellent performance and automatic SSL.
 
-[[headers]]
-  for = "/assets/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-```
+### Setup Steps
 
-### AWS S3 + CloudFront
+1. **Install Vercel CLI**
+   ```bash
+   npm install -g vercel
+   ```
+
+2. **Login**
+   ```bash
+   vercel login
+   ```
+
+3. **Deploy**
+   ```bash
+   cd frontend
+   vercel
+   ```
+
+4. **Set Environment Variables**
+   ```bash
+   vercel env add VITE_API_URL production
+   ```
+
+5. **Production Deployment**
+   ```bash
+   vercel --prod
+   ```
+
+### Using vercel.json
+
+The included `vercel.json` configures:
+- Build settings
+- Headers for security
+- Rewrites for API proxying
+- SPA routing
+
+---
+
+## Render
+
+Render provides full-stack hosting with managed databases.
+
+### Setup Steps
+
+1. **Create Render Account**
+   - Sign up at [render.com](https://render.com)
+
+2. **Deploy Using Blueprint**
+   ```bash
+   # In Render dashboard, select "New +" → "Blueprint"
+   # Connect your repository
+   # Render will read render.yaml automatically
+   ```
+
+3. **Configure Environment Variables**
+   - In Render dashboard, set required variables:
+     - `CORS_ORIGIN`
+     - `FRONTEND_URL`
+     - `JWT_SECRET`
+     - AWS credentials (if using S3)
+     - AI service API keys
+     - Payment credentials
+
+4. **Deploy**
+   - Render will automatically deploy all services
+
+### Manual Deployment
 
 ```bash
-# Build
-npm run build
-
-# Upload to S3
-aws s3 sync dist/ s3://your-bucket-name --delete
-
-# Invalidate CloudFront cache
-aws cloudfront create-invalidation --distribution-id YOUR_DIST_ID --paths "/*"
-```
-
-## Backend Deployment
-
-### Railway
-
-```bash
-# Install Railway CLI
-npm i -g @railway/cli
+# Install Render CLI
+npm install -g @render-cloud/cli
 
 # Login
-railway login
+render login
 
 # Deploy
-cd backend
-railway up
+render deploy
 ```
 
-railway.json:
+---
 
-```json
-{
-  "build": {
-    "builder": "NIXPACKS"
-  },
-  "deploy": {
-    "startCommand": "npm start",
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10
-  }
-}
-```
+## Docker
 
-### Heroku
+### Production Deployment
+
+1. **Configure Environment**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your values
+   ```
+
+2. **Build and Run**
+   ```bash
+   docker-compose -f docker/docker-compose.prod.yml up -d
+   ```
+
+3. **Check Status**
+   ```bash
+   docker-compose -f docker/docker-compose.prod.yml ps
+   ```
+
+4. **View Logs**
+   ```bash
+   docker-compose -f docker/docker-compose.prod.yml logs -f
+   ```
+
+### Development with Docker
 
 ```bash
-# Create Heroku app
-heroku create your-app-name
-
-# Add MongoDB
-heroku addons:create mongolab
-
-# Add Redis
-heroku addons:create heroku-redis
-
-# Deploy
-git push heroku main
+docker-compose -f docker/docker-compose.dev.yml up
 ```
 
-Procfile:
+### SSL with Nginx
 
-```
-web: node src/app.js
-worker: node src/queue/workers.js
-```
+1. **Generate SSL Certificates**
+   ```bash
+   mkdir -p docker/ssl
+   openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+     -keyout docker/ssl/key.pem \
+     -out docker/ssl/cert.pem
+   ```
 
-### AWS EC2
+2. **Deploy with Nginx**
+   ```bash
+   docker-compose -f docker/docker-compose.prod.yml --profile with-nginx up -d
+   ```
 
-```bash
-# SSH into EC2
-ssh -i your-key.pem ubuntu@your-ec2-ip
-
-# Install Node.js
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
-
-# Install PM2
-sudo npm install -g pm2
-
-# Clone repo
-git clone https://github.com/your-repo.git
-cd your-repo/backend
-npm install
-
-# Start with PM2
-pm2 start src/app.js --name media-editor
-pm2 save
-pm2 startup
-```
-
-ecosystem.config.js:
-
-```javascript
-module.exports = {
-  apps: [{
-    name: 'media-editor-api',
-    script: 'src/app.js',
-    instances: 'max',
-    exec_mode: 'cluster',
-    env: {
-      NODE_ENV: 'production',
-      PORT: 5000
-    }
-  }]
-};
-```
-
-## Database Setup
-
-### MongoDB Atlas
-1. Create cluster at mongodb.com/cloud/atlas
-2. Create database user
-3. Whitelist IP addresses
-4. Get connection string
-5. Update .env:
-
-```
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/dbname
-```
-
-### Redis Cloud
-1. Create instance at redis.com/try-free
-2. Get connection details
-3. Update .env:
-
-```
-REDIS_HOST=your-redis-host
-REDIS_PORT=16379
-REDIS_PASSWORD=your-password
-```
-
-## Docker Deployment
-
-### docker-compose.yml
-
-```yaml
-version: '3.8'
-
-services:
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      - VITE_API_URL=http://localhost:5000/api
-    depends_on:
-      - backend
-
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "5000:5000"
-    environment:
-      - NODE_ENV=production
-      - MONGODB_URI=mongodb://mongo:27017/mediaeditor
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-    depends_on:
-      - mongo
-      - redis
-
-  mongo:
-    image: mongo:6.0
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
-
-volumes:
-  mongo-data:
-  redis-data:
-```
-
-### Deploy
-
-```bash
-# Build and start
-docker-compose up -d --build
-
-# View logs
-docker-compose logs -f
-
-# Stop
-docker-compose down
-```
-
-## CI/CD Pipeline
-
-### GitHub Actions
-
-```yaml
-name: Deploy
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - run: npm ci
-      - run: npm test
-
-  deploy-frontend:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-      - run: cd frontend && npm ci
-      - run: cd frontend && npm run build
-      - uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.ORG_ID }}
-          vercel-project-id: ${{ secrets.PROJECT_ID }}
-          vercel-args: '--prod'
-          working-directory: ./frontend
-
-  deploy-backend:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-      - run: cd backend && npm ci
-      - uses: akhileshns/heroku-deploy@v3.12.12
-        with:
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: "your-app-name"
-          heroku_email: "your-email@example.com"
-          appdir: "backend"
-```
+---
 
 ## Environment Variables
 
-### Production Checklist
+### Required Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `NODE_ENV` | Environment | `production` |
+| `PORT` | Backend port | `5000` |
+| `MONGODB_URI` | MongoDB connection | - |
+| `REDIS_HOST` | Redis host | `localhost` |
+| `REDIS_PORT` | Redis port | `6379` |
+| `JWT_SECRET` | JWT signing secret | - |
+| `CORS_ORIGIN` | Allowed CORS origins | `http://localhost:3000` |
+| `VITE_API_URL` | Frontend API URL | `http://localhost:5000` |
+
+### Optional Variables
+
+| Variable | Description |
+|----------|-------------|
+| `AWS_ACCESS_KEY_ID` | AWS access key |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret key |
+| `OPENAI_API_KEY` | OpenAI API key |
+| `STABILITY_API_KEY` | Stability AI key |
+| `STRIPE_SECRET_KEY` | Stripe secret key |
+
+---
+
+## Troubleshooting
+
+### Build Fails
 
 ```bash
-# Frontend
-VITE_API_URL=https://api.yourdomain.com
-VITE_OPENAI_API_KEY=sk-prod-xxx
-VITE_CLOUDINARY_CLOUD_NAME=your-cloud
-
-# Backend
-NODE_ENV=production
-PORT=5000
-MONGODB_URI=mongodb+srv://...
-REDIS_HOST=your-redis.cloud
-JWT_SECRET=super-secret-production-key
-AWS_ACCESS_KEY_ID=AKIA...
-AWS_SECRET_ACCESS_KEY=xxx
-OPENAI_API_KEY=sk-xxx
+# Clear cache and rebuild
+rm -rf node_modules package-lock.json
+npm install
+npm run build
 ```
 
-## SSL/TLS Setup
+### CORS Errors
 
-### Let's Encrypt (Free)
+Ensure `CORS_ORIGIN` matches your frontend URL exactly.
+
+### Database Connection Fails
+
+Check MongoDB URI format:
+```
+mongodb://username:password@host:port/database?authSource=admin
+```
+
+### Port Already in Use
 
 ```bash
-# Install Certbot
-sudo apt-get install certbot python3-certbot-nginx
+# Find process using port
+lsof -i :5000
 
-# Get certificate
-sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
-
-# Auto-renewal
-sudo certbot renew --dry-run
+# Kill process
+kill -9 <PID>
 ```
 
-## Monitoring
+---
 
-### Sentry
+## Support
 
-```javascript
-// Frontend
-import * as Sentry from "@sentry/react";
-
-Sentry.init({
-  dsn: "your-sentry-dsn",
-  integrations: [new Sentry.BrowserTracing()],
-  tracesSampleRate: 1.0,
-});
-
-// Backend
-import * as Sentry from "@sentry/node";
-
-Sentry.init({
-  dsn: "your-sentry-dsn",
-  environment: process.env.NODE_ENV,
-});
-```
-
-### Health Checks
-
-```javascript
-// backend/src/routes/health.js
-app.get('/health', async (req, res) => {
-  const health = {
-    uptime: process.uptime(),
-    timestamp: Date.now(),
-    status: 'OK'
-  };
-
-  try {
-    await mongoose.connection.db.admin().ping();
-    health.mongodb = 'Connected';
-  } catch (error) {
-    health.mongodb = 'Disconnected';
-    health.status = 'ERROR';
-  }
-
-  try {
-    await redis.ping();
-    health.redis = 'Connected';
-  } catch (error) {
-    health.redis = 'Disconnected';
-    health.status = 'ERROR';
-  }
-
-  const statusCode = health.status === 'OK' ? 200 : 503;
-  res.status(statusCode).json(health);
-});
-```
+For issues or questions:
+- Check existing GitHub Issues
+- Create a new issue with details
+- Review platform-specific documentation
