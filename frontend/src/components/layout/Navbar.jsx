@@ -24,7 +24,16 @@ import {
   Smile,
   BarChart3,
   Scan,
-  Target
+  Target,
+  Box,
+  Puzzle,
+  Brain,
+  Cloud,
+  Terminal,
+  Activity,
+  Code2,
+  Database,
+  MessageSquare
 } from 'lucide-react';
 import { cn } from '@/utils/helpers/cn';
 import Button from '@/components/ui/Button';
@@ -49,6 +58,21 @@ const toolsNavItems = [
   { icon: PaintBucket, label: 'Colorize', path: '/editor?tool=colorize' },
   { icon: Scan, label: 'Face Detect', path: '/editor?tool=face-detect' },
   { icon: Target, label: 'Object Detect', path: '/editor?tool=object-detect' }
+];
+
+const advancedNavItems = [
+  { icon: Box, label: '3D Canvas', path: '/editor?tab=3d', badge: '3D' },
+  { icon: Puzzle, label: 'Plugins', path: '/editor?tab=plugins' },
+  { icon: Brain, label: 'Neural Networks', path: '/editor?tab=neural', badge: 'AI' },
+  { icon: Scan, label: 'Computer Vision', path: '/editor?tab=vision', badge: 'New' },
+  { icon: MessageSquare, label: 'NLP', path: '/editor?tab=nlp', badge: 'New' },
+  { icon: Wand2, label: 'Generative AI', path: '/editor?tab=genai', badge: 'New' },
+  { icon: Zap, label: 'Reinforcement Learning', path: '/editor?tab=rl', badge: 'New' },
+  { icon: Cloud, label: 'Cloud Sync', path: '/editor?tab=cloud' },
+  { icon: Terminal, label: 'Script Editor', path: '/editor?tab=script', badge: 'Code' },
+  { icon: Activity, label: 'Performance', path: '/editor?tab=performance' },
+  { icon: Code2, label: 'API Integration', path: '/editor?tab=api' },
+  { icon: Database, label: 'Batch Processing', path: '/editor?tab=batch', badge: 'New' }
 ];
 
 const bottomNavItems = [
@@ -163,6 +187,17 @@ export default function Navbar({ onClose }) {
           </h3>
           <div className="space-y-1">
             {toolsNavItems.map((item) => (
+              <NavItem key={item.path + item.label} item={item} />
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <h3 className="px-4 mb-2 text-xs font-semibold text-surface-500 uppercase tracking-wider">
+            Advanced
+          </h3>
+          <div className="space-y-1">
+            {advancedNavItems.map((item) => (
               <NavItem key={item.path + item.label} item={item} />
             ))}
           </div>

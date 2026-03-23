@@ -22,7 +22,9 @@ import {
   ArrowRight,
   Waves,
   Scan,
-  Target
+  Target,
+  MessageSquare,
+  FileText
 } from 'lucide-react';
 import { useEditor } from '@/contexts/EditorContext';
 import Button from '@/components/ui/Button';
@@ -89,18 +91,54 @@ const aiTools = [
   {
     id: 'object-detect',
     name: 'Object Detection',
-    description: 'Identify and isolate objects',
+    description: 'Detect and identify objects in images',
     icon: Target,
-    color: 'from-indigo-500 to-violet-500',
-    category: 'edit'
+    color: 'from-green-500 to-emerald-500',
+    category: 'analysis'
   },
   {
-    id: 'style-transfer',
-    name: 'Style Transfer',
-    description: 'Apply artistic styles to your images',
-    icon: Palette,
-    color: 'from-fuchsia-500 to-pink-500',
-    category: 'creative'
+    id: 'computer-vision',
+    name: 'Computer Vision',
+    description: 'Advanced AI vision analysis',
+    icon: Scan,
+    color: 'from-purple-500 to-pink-500',
+    category: 'analysis',
+    advanced: true
+  },
+  {
+    id: 'nlp',
+    name: 'Natural Language',
+    description: 'Text processing and analysis',
+    icon: MessageSquare,
+    color: 'from-blue-500 to-cyan-500',
+    category: 'analysis',
+    advanced: true
+  },
+  {
+    id: 'generative-ai',
+    name: 'Generative AI',
+    description: 'Create images with AI',
+    icon: Wand2,
+    color: 'from-orange-500 to-amber-500',
+    category: 'generation',
+    advanced: true
+  },
+  {
+    id: 'reinforcement-learning',
+    name: 'Reinforcement Learning',
+    description: 'Train AI agents with RL',
+    icon: Zap,
+    color: 'from-red-500 to-rose-500',
+    category: 'advanced',
+    advanced: true
+  },
+  {
+    id: 'generate',
+    name: 'AI Prompts',
+    description: 'Generate with text prompts',
+    icon: FileText,
+    color: 'from-indigo-500 to-blue-500',
+    category: 'generation'
   },
   {
     id: 'face-enhance',

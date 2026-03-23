@@ -9,6 +9,7 @@ const imageRoutes = require('./images');
 const videoRoutes = require('./videos');
 const audioRoutes = require('./audio');
 const aiRoutes = require('./ai');
+const userBehaviorRoutes = require('./userBehavior');
 const templateRoutes = require('./templates');
 const assetRoutes = require('./assets');
 const exportRoutes = require('./export');
@@ -24,6 +25,7 @@ router.use('/images', imageRoutes);
 router.use('/videos', videoRoutes);
 router.use('/audio', audioRoutes);
 router.use('/ai', aiRoutes);
+router.use('/user-behavior', userBehaviorRoutes);
 router.use('/templates', templateRoutes);
 router.use('/assets', assetRoutes);
 router.use('/export', exportRoutes);
@@ -45,6 +47,7 @@ router.get('/', (req, res) => {
       videos: '/api/v1/videos',
       audio: '/api/v1/audio',
       ai: '/api/v1/ai',
+      userBehavior: '/api/v1/user-behavior',
       templates: '/api/v1/templates',
       assets: '/api/v1/assets',
       export: '/api/v1/export',

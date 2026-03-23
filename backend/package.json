@@ -45,6 +45,8 @@
     "openai": "^4.20.1",
     "replicate": "^0.25.2",
     "@huggingface/inference": "^2.6.4",
+    "axios": "^1.6.2",
+    "form-data": "^4.0.0",
 
     "bull": "^4.11.5",
     "bullmq": "^5.0.0",

@@ -4,6 +4,13 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import Layout from './components/layout/Layout';
 import LoadingScreen from './components/ui/LoadingScreen';
+import ErrorBoundary from './components/ui/ErrorBoundary';
+
+// Defensive check for React
+if (!React || !React.Component) {
+  console.error('React is not properly imported or available in App.jsx');
+  throw new Error('React is not available. Please check your React installation.');
+}
 
 // Lazy load pages for better performance
 const Home = lazy(() => import('./pages/Home'));
@@ -19,6 +26,7 @@ const Pricing = lazy(() => import('./pages/Pricing'));
 const Help = lazy(() => import('./pages/Help'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Assets = lazy(() => import('./pages/Assets'));
+const AIStatusDashboard = lazy(() => import('./components/admin/AIStatusDashboard'));
 const Terms = lazy(() => import('./pages/Terms'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const About = lazy(() => import('./pages/About'));
@@ -28,9 +36,21 @@ const ForgotPassword = lazy(() => import('./pages/Auth/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/Auth/ResetPassword'));
 
 const pageVariants = {
-  initial: { opacity: 0, y: 20 },
-  in: { opacity: 1, y: 0 },
-  out: { opacity: 0, y: -20 }
+  initial: { 
+    opacity: 0, 
+    y: 20,
+    scale: 0.95 
+  },
+  in: { 
+    opacity: 1, 
+    y: 0,
+    scale: 1 
+  },
+  out: { 
+    opacity: 0, 
+    y: -20,
+    scale: 0.95 
+  }
 };
 
 const pageTransition = {
@@ -46,7 +66,6 @@ const PageWrapper = ({ children }) => (
     exit="out"
     variants={pageVariants}
     transition={pageTransition}
-    className="h-full"
   >
     {children}
   </motion.div>
@@ -63,43 +82,46 @@ function App({ onReady }) {
   }, [onReady]);
 
   return (
-    <Suspense fallback={<LoadingScreen />}>
-      <AnimatePresence mode="wait">
-        <Routes>
-          {/* Auth Routes */}
-          <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
-          <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
-          <Route path="/forgot-password" element={<PageWrapper><ForgotPassword /></PageWrapper>} />
-          <Route path="/reset-password/:token" element={<PageWrapper><ResetPassword /></PageWrapper>} />
+    <ErrorBoundary>
+      <Suspense fallback={<LoadingScreen />}>
+        <AnimatePresence mode="wait">
+          <Routes>
+            {/* Auth Routes */}
+            <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
+            <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
+            <Route path="/forgot-password" element={<PageWrapper><ForgotPassword /></PageWrapper>} />
+            <Route path="/reset-password/:token" element={<PageWrapper><ResetPassword /></PageWrapper>} />
 
-          {/* Main App Routes */}
-          <Route path="/" element={<Layout />}>
-            <Route index element={<PageWrapper><Home /></PageWrapper>} />
-            <Route path="dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
-            <Route path="assets" element={<PageWrapper><Assets /></PageWrapper>} />
-            <Route path="editor" element={<PageWrapper><Editor /></PageWrapper>} />
-            <Route path="editor/:projectId" element={<PageWrapper><Editor /></PageWrapper>} />
-            <Route path="video-editor" element={<PageWrapper><VideoEditor /></PageWrapper>} />
-            <Route path="video-editor/:projectId" element={<PageWrapper><VideoEditor /></PageWrapper>} />
-            <Route path="audio-editor" element={<PageWrapper><AudioEditor /></PageWrapper>} />
-            <Route path="audio-editor/:projectId" element={<PageWrapper><AudioEditor /></PageWrapper>} />
-            <Route path="gallery" element={<PageWrapper><Gallery /></PageWrapper>} />
-            <Route path="templates" element={<PageWrapper><Templates /></PageWrapper>} />
-            <Route path="projects" element={<PageWrapper><Projects /></PageWrapper>} />
-            <Route path="settings" element={<PageWrapper><Settings /></PageWrapper>} />
-            <Route path="profile" element={<PageWrapper><Profile /></PageWrapper>} />
-            <Route path="pricing" element={<PageWrapper><Pricing /></PageWrapper>} />
-            <Route path="help" element={<PageWrapper><Help /></PageWrapper>} />
-            <Route path="terms" element={<PageWrapper><Terms /></PageWrapper>} />
-            <Route path="privacy" element={<PageWrapper><Privacy /></PageWrapper>} />
-            <Route path="about" element={<PageWrapper><About /></PageWrapper>} />
-          </Route>
+            {/* Main App Routes */}
+            <Route path="/" element={<Layout />}>
+              <Route index element={<PageWrapper><Home /></PageWrapper>} />
+              <Route path="dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
+              <Route path="admin" element={<PageWrapper><AIStatusDashboard /></PageWrapper>} />
+              <Route path="assets" element={<PageWrapper><Assets /></PageWrapper>} />
+              <Route path="editor" element={<PageWrapper><Editor /></PageWrapper>} />
+              <Route path="editor/:projectId" element={<PageWrapper><Editor /></PageWrapper>} />
+              <Route path="video-editor" element={<PageWrapper><VideoEditor /></PageWrapper>} />
+              <Route path="video-editor/:projectId" element={<PageWrapper><VideoEditor /></PageWrapper>} />
+              <Route path="audio-editor" element={<PageWrapper><AudioEditor /></PageWrapper>} />
+              <Route path="audio-editor/:projectId" element={<PageWrapper><AudioEditor /></PageWrapper>} />
+              <Route path="gallery" element={<PageWrapper><Gallery /></PageWrapper>} />
+              <Route path="templates" element={<PageWrapper><Templates /></PageWrapper>} />
+              <Route path="projects" element={<PageWrapper><Projects /></PageWrapper>} />
+              <Route path="settings" element={<PageWrapper><Settings /></PageWrapper>} />
+              <Route path="profile" element={<PageWrapper><Profile /></PageWrapper>} />
+              <Route path="pricing" element={<PageWrapper><Pricing /></PageWrapper>} />
+              <Route path="help" element={<PageWrapper><Help /></PageWrapper>} />
+              <Route path="terms" element={<PageWrapper><Terms /></PageWrapper>} />
+              <Route path="privacy" element={<PageWrapper><Privacy /></PageWrapper>} />
+              <Route path="about" element={<PageWrapper><About /></PageWrapper>} />
+            </Route>
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </AnimatePresence>
-    </Suspense>
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AnimatePresence>
+      </Suspense>
+    </ErrorBoundary>
   );
 }
 

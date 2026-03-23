@@ -9,7 +9,19 @@ import {
   History,
   ChevronLeft,
   X,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Puzzle,
+  Code2,
+  Layers as BatchIcon,
+  Box,
+  Brain,
+  Cloud,
+  Terminal,
+  Activity,
+  Scan,
+  MessageSquare,
+  Wand2,
+  Zap
 } from 'lucide-react';
 import { useEditor } from '@/contexts/EditorContext';
 import LayersPanel from '@/components/layers/LayersPanel';
@@ -25,12 +37,25 @@ import Denoising from '@/components/ai/Denoising';
 import StyleTransfer from '@/components/ai/StyleTransfer';
 import FaceDetection from '@/components/ai/FaceDetection';
 import ObjectDetection from '@/components/ai/ObjectDetection';
+import ImageUpscaling from '@/components/ai/ImageUpscaling';
+import ComputerVision from '@/components/ai/ComputerVision';
+import NaturalLanguageProcessing from '@/components/ai/NaturalLanguageProcessing';
+import GenerativeAI from '@/components/ai/GenerativeAI';
+import ReinforcementLearning from '@/components/ai/ReinforcementLearning';
 import AIPrompts from '@/components/ai/AIPrompts';
 import HistoryStack from '@/components/canvas/HistoryStack';
 import AssetsPanel from './AssetsPanel';
 import LibraryPanel from './LibraryPanel';
 import PresetsPanel from './PresetsPanel';
 import PropertiesPanel from './PropertiesPanel';
+import PluginManager from '@/components/advanced/PluginManager';
+import APIIntegration from '@/components/advanced/APIIntegration';
+import BatchProcessing from '@/components/advanced/BatchProcessing';
+import NeuralNetwork from '@/components/advanced/NeuralNetwork';
+import CloudSync from '@/components/advanced/CloudSync';
+import ScriptEditor from '@/components/advanced/ScriptEditor';
+import PerformanceMonitor from '@/components/advanced/PerformanceMonitor';
+import ThreeJSCanvas from '@/components/3d/ThreeJSCanvas';
 import { cn } from '@/utils/helpers/cn';
 import Button from '@/components/ui/Button';
 
@@ -40,6 +65,18 @@ const tabs = [
   { id: 'assets', icon: ImageIcon, label: 'Assets' },
   { id: 'presets', icon: Palette, label: 'Presets' },
   { id: 'ai', icon: Sparkles, label: 'AI' },
+  { id: '3d', icon: Box, label: '3D' },
+  { id: 'plugins', icon: Puzzle, label: 'Plugins' },
+  { id: 'neural', icon: Brain, label: 'Neural' },
+  { id: 'vision', icon: Scan, label: 'Vision' },
+  { id: 'nlp', icon: MessageSquare, label: 'NLP' },
+  { id: 'genai', icon: Wand2, label: 'GenAI' },
+  { id: 'rl', icon: Zap, label: 'RL' },
+  { id: 'cloud', icon: Cloud, label: 'Cloud' },
+  { id: 'script', icon: Terminal, label: 'Script' },
+  { id: 'performance', icon: Activity, label: 'Performance' },
+  { id: 'api', icon: Code2, label: 'API' },
+  { id: 'batch', icon: BatchIcon, label: 'Batch' },
   { id: 'history', icon: History, label: 'History' }
 ];
 
@@ -91,6 +128,31 @@ export default function RightPanel({ className }) {
       switch (ui.activeAITool) {
         case 'background-remove':
           return <BackgroundRemoval image={image} onComplete={(result) => {
+            setImage(result);
+            addToHistory(result);
+          }} />;
+        case 'upscale':
+          return <ImageUpscaling image={image} onComplete={(result) => {
+            setImage(result);
+            addToHistory(result);
+          }} />;
+        case 'computer-vision':
+          return <ComputerVision image={image} onComplete={(result) => {
+            setImage(result);
+            addToHistory(result);
+          }} />;
+        case 'nlp':
+          return <NaturalLanguageProcessing image={image} onComplete={(result) => {
+            setImage(result);
+            addToHistory(result);
+          }} />;
+        case 'generative-ai':
+          return <GenerativeAI image={image} onComplete={(result) => {
+            setImage(result);
+            addToHistory(result);
+          }} />;
+        case 'reinforcement-learning':
+          return <ReinforcementLearning image={image} onComplete={(result) => {
             setImage(result);
             addToHistory(result);
           }} />;
@@ -156,6 +218,42 @@ export default function RightPanel({ className }) {
         return <LibraryPanel />;
       case 'ai':
         return <AIHub onToolSelect={(tool) => setUI({ ...ui, activeAITool: tool.id })} />;
+      case '3d':
+        return <ThreeJSCanvas />;
+      case 'plugins':
+        return <PluginManager />;
+      case 'neural':
+        return <NeuralNetwork />;
+      case 'vision':
+        return <ComputerVision image={image} onComplete={(result) => {
+          setImage(result);
+          addToHistory(result);
+        }} />;
+      case 'nlp':
+        return <NaturalLanguageProcessing image={image} onComplete={(result) => {
+          setImage(result);
+          addToHistory(result);
+        }} />;
+      case 'genai':
+        return <GenerativeAI image={image} onComplete={(result) => {
+          setImage(result);
+          addToHistory(result);
+        }} />;
+      case 'rl':
+        return <ReinforcementLearning image={image} onComplete={(result) => {
+          setImage(result);
+          addToHistory(result);
+        }} />;
+      case 'cloud':
+        return <CloudSync />;
+      case 'script':
+        return <ScriptEditor />;
+      case 'performance':
+        return <PerformanceMonitor />;
+      case 'api':
+        return <APIIntegration />;
+      case 'batch':
+        return <BatchProcessing />;
       case 'history':
         return <HistoryStack />;
       default:
