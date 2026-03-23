@@ -11,7 +11,7 @@ import {
   Hand
 } from 'lucide-react';
 import { useEditor } from '@/contexts/EditorContext';
-import { TooltipWrapper } from '@/components/ui/Tooltip';
+import { TooltipWrapper, TooltipProvider } from '@/components/ui/Tooltip';
 import { cn } from '@/utils/helpers/cn';
 
 export default function CanvasControls({ className }) {
@@ -88,15 +88,16 @@ export default function CanvasControls({ className }) {
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={cn(
-        'flex items-center gap-1 p-1.5 rounded-xl',
-        'bg-editor-card/90 backdrop-blur-xl border border-editor-border shadow-elevated',
-        className
-      )}
-    >
+    <TooltipProvider>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={cn(
+          'flex items-center gap-1 p-1.5 rounded-xl',
+          'bg-editor-card/90 backdrop-blur-xl border border-editor-border shadow-elevated',
+          className
+        )}
+      >
       {controls.map((control, index) => {
         if (control.type === 'divider') {
           return (
@@ -139,6 +140,7 @@ export default function CanvasControls({ className }) {
       <div className="px-3 py-1.5 text-xs font-mono text-surface-400 min-w-[60px] text-center">
         {Math.round(zoom * 100)}%
       </div>
-    </motion.div>
+      </motion.div>
+    </TooltipProvider>
   );
 }
