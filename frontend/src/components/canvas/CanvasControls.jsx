@@ -67,7 +67,7 @@ export default function CanvasControls({ className }) {
     {
       icon: RotateCcw,
       label: 'Reset View',
-      onClick: resetView,
+      onClick: handleFitToScreen,
       shortcut: 'R'
     },
     { type: 'divider' },
@@ -82,7 +82,7 @@ export default function CanvasControls({ className }) {
       icon: Grid3x3,
       label: 'Toggle Grid',
       onClick: toggleGrid,
-      active: ui.gridVisible,
+      active: showGrid,
       shortcut: 'G'
     }
   ];
