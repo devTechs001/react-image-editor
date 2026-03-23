@@ -69,7 +69,7 @@ export default function Layout() {
           <div className="container-custom">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <p className="text-sm text-surface-500">
-                © 2024 AI Media Editor. All rights reserved.
+                © 2024 AI Media Studio. All rights reserved.
               </p>
               <div className="flex items-center gap-6">
                 <a href="#" className="text-sm text-surface-500 hover:text-white transition-colors">

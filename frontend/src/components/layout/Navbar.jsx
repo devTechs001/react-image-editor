@@ -18,7 +18,9 @@ import {
   Palette,
   Zap,
   Crown,
-  X
+  X,
+  GalleryVerticalEnd,
+  Smile
 } from 'lucide-react';
 import { cn } from '@/utils/helpers/cn';
 import Button from '@/components/ui/Button';
@@ -27,19 +29,22 @@ const mainNavItems = [
   { icon: Home, label: 'Home', path: '/' },
   { icon: Image, label: 'Image Editor', path: '/editor' },
   { icon: Video, label: 'Video Editor', path: '/video-editor' },
-  { icon: Music, label: 'Audio Editor', path: '/audio-editor' }
+  { icon: Music, label: 'Audio Editor', path: '/audio-editor' },
+  { icon: GalleryVerticalEnd, label: 'Gallery', path: '/gallery' }
 ];
 
 const toolsNavItems = [
-  { icon: Wand2, label: 'AI Tools', path: '/editor', badge: 'New' },
+  { icon: Wand2, label: 'AI Studio', path: '/editor', badge: 'New' },
   { icon: Layers, label: 'Templates', path: '/templates' },
   { icon: FolderOpen, label: 'Projects', path: '/projects' },
-  { icon: Palette, label: 'Assets', path: '/assets' }
+  { icon: Palette, label: 'Assets', path: '/assets' },
+  { icon: Smile, label: 'Face Swap', path: '/editor?tool=face-swap' }
 ];
 
 const bottomNavItems = [
   { icon: Settings, label: 'Settings', path: '/settings' },
-  { icon: HelpCircle, label: 'Help & Support', path: '/help' }
+  { icon: HelpCircle, label: 'Help & Support', path: '/help' },
+  { icon: Star, label: 'Go Pro', path: '/pricing', highlight: true }
 ];
 
 export default function Navbar({ onClose }) {
@@ -47,8 +52,22 @@ export default function Navbar({ onClose }) {
   const navigate = useNavigate();
 
   const NavItem = ({ item }) => {
-    const isActive = location.pathname === item.path;
+    const isActive = location.pathname === item.path || (item.path.includes('/editor') && location.pathname.includes('/editor'));
     const Icon = item.icon;
+
+    if (item.highlight) {
+      return (
+        <Link
+          to={item.path}
+          onClick={onClose}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-400 hover:border-amber-500/50"
+        >
+          <Icon className="w-5 h-5 flex-shrink-0" />
+          <span className="font-semibold">{item.label}</span>
+          <Crown className="w-4 h-4 ml-auto text-amber-400" />
+        </Link>
+      );
+    }
 
     return (
       <Link
@@ -88,7 +107,7 @@ export default function Navbar({ onClose }) {
           </div>
           <div>
             <h1 className="font-bold text-white">AI Media</h1>
-            <p className="text-xs text-surface-500">Editor Pro</p>
+            <p className="text-xs text-surface-500">Studio</p>
           </div>
         </Link>
         
