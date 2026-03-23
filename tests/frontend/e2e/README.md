@@ -1,0 +1,2 @@
+# Frontend E2E Tests
+# Place end-to-end tests here

@@ -1,0 +1,1053 @@
+/* frontend/src/styles/utilities.css */
+/* ============================================
+   Utility Classes
+   ============================================ */
+
+/* ============================================
+   Layout Utilities
+   ============================================ */
+
+/* Container */
+.container-fluid {
+  @apply w-full px-4;
+}
+
+.container-centered {
+  @apply mx-auto;
+}
+
+/* Flexbox */
+.flex-center {
+  @apply flex items-center justify-center;
+}
+
+.flex-between {
+  @apply flex items-center justify-between;
+}
+
+.flex-around {
+  @apply flex items-center justify-around;
+}
+
+.flex-end {
+  @apply flex items-center justify-end;
+}
+
+.flex-col-center {
+  @apply flex flex-col items-center justify-center;
+}
+
+.flex-1 {
+  @apply flex-1;
+}
+
+.flex-none {
+  @apply flex-none;
+}
+
+/* Grid */
+.grid-center {
+  @apply grid place-items-center;
+}
+
+.grid-cols-auto {
+  @apply grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+/* Positioning */
+.relative {
+  @apply relative;
+}
+
+.absolute-fill {
+  @apply absolute inset-0;
+}
+
+.fixed-fill {
+  @apply fixed inset-0;
+}
+
+.sticky-top {
+  @apply sticky top-0;
+  z-index: 100;
+}
+
+/* Z-Index */
+.z-base {
+  z-index: 1;
+}
+
+.z-dropdown {
+  z-index: 1000;
+}
+
+.z-sticky {
+  z-index: 1020;
+}
+
+.z-fixed {
+  z-index: 1030;
+}
+
+.z-modal-backdrop {
+  z-index: 1040;
+}
+
+.z-modal {
+  z-index: 1050;
+}
+
+.z-popover {
+  z-index: 1060;
+}
+
+.z-tooltip {
+  z-index: 1070;
+}
+
+.z-toast {
+  z-index: 1080;
+}
+
+/* ============================================
+   Spacing Utilities
+   ============================================ */
+
+/* Stack (vertical spacing) */
+.stack-sm {
+  @apply space-y-2;
+}
+
+.stack {
+  @apply space-y-4;
+}
+
+.stack-lg {
+  @apply space-y-6;
+}
+
+.stack-xl {
+  @apply space-y-8;
+}
+
+/* Cluster (horizontal spacing) */
+.cluster-sm {
+  @apply flex flex-wrap gap-2;
+}
+
+.cluster {
+  @apply flex flex-wrap gap-4;
+}
+
+.cluster-lg {
+  @apply flex flex-wrap gap-6;
+}
+
+/* Center */
+.center {
+  @apply flex items-center justify-center;
+}
+
+.center-y {
+  @apply flex align-items center;
+}
+
+.center-x {
+  @apply flex justify-center;
+}
+
+/* ============================================
+   Sizing Utilities
+   ============================================ */
+
+/* Full viewport */
+.h-screen-full {
+  @apply h-screen;
+}
+
+.w-screen-full {
+  @apply w-screen;
+}
+
+.h-full {
+  @apply h-full;
+}
+
+.w-full {
+  @apply w-full;
+}
+
+/* Min/Max */
+.min-h-0 {
+  @apply min-h-0;
+}
+
+.min-w-0 {
+  @apply min-w-0;
+}
+
+.max-h-0 {
+  @apply max-h-0;
+}
+
+.max-w-0 {
+  @apply max-w-0;
+}
+
+/* Aspect Ratio */
+.aspect-square {
+  aspect-ratio: 1 / 1;
+}
+
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
+
+.aspect-portrait {
+  aspect-ratio: 3 / 4;
+}
+
+.aspect-landscape {
+  aspect-ratio: 4 / 3;
+}
+
+/* ============================================
+   Typography Utilities
+   ============================================ */
+
+/* Text truncation */
+.truncate {
+  @apply overflow-hidden text-ellipsis whitespace-nowrap;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  @apply overflow-hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  @apply overflow-hidden;
+}
+
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  @apply overflow-hidden;
+}
+
+/* Text alignment */
+.text-justify {
+  @apply text-justify;
+}
+
+/* Font weight */
+.font-thin {
+  @apply font-100;
+}
+
+.font-extralight {
+  @apply font-200;
+}
+
+.font-light {
+  @apply font-300;
+}
+
+.font-normal {
+  @apply font-400;
+}
+
+.font-medium {
+  @apply font-500;
+}
+
+.font-semibold {
+  @apply font-600;
+}
+
+.font-bold {
+  @apply font-700;
+}
+
+.font-extrabold {
+  @apply font-800;
+}
+
+.font-black {
+  @apply font-900;
+}
+
+/* Text transform */
+.uppercase {
+  @apply uppercase;
+}
+
+.lowercase {
+  @apply lowercase;
+}
+
+.capitalize {
+  @apply capitalize;
+}
+
+.normal-case {
+  @apply normal-case;
+}
+
+/* Letter spacing */
+.tracking-tighter {
+  @apply tracking-tighter;
+}
+
+.tracking-tight {
+  @apply tracking-tight;
+}
+
+.tracking-normal {
+  @apply tracking-normal;
+}
+
+.tracking-wide {
+  @apply tracking-wide;
+}
+
+.tracking-wider {
+  @apply tracking-wider;
+}
+
+.tracking-widest {
+  @apply tracking-widest;
+}
+
+/* Line height */
+.leading-none {
+  @apply leading-none;
+}
+
+.leading-tight {
+  @apply leading-tight;
+}
+
+.leading-snug {
+  @apply leading-snug;
+}
+
+.leading-normal {
+  @apply leading-normal;
+}
+
+.leading-relaxed {
+  @apply leading-relaxed;
+}
+
+.leading-loose {
+  @apply leading-loose;
+}
+
+/* ============================================
+   Background Utilities
+   ============================================ */
+
+/* Gradient backgrounds */
+.bg-gradient-primary {
+  @apply bg-gradient-to-r from-primary-500 to-secondary-500;
+}
+
+.bg-gradient-secondary {
+  @apply bg-gradient-to-r from-secondary-500 to-accent-cyan;
+}
+
+.bg-gradient-warm {
+  @apply bg-gradient-to-r from-amber-500 to-rose-500;
+}
+
+.bg-gradient-cool {
+  @apply bg-gradient-to-r from-cyan-500 to-blue-500;
+}
+
+.bg-gradient-success {
+  @apply bg-gradient-to-r from-emerald-500 to-teal-500;
+}
+
+.bg-gradient-danger {
+  @apply bg-gradient-to-r from-red-500 to-orange-500;
+}
+
+/* Mesh gradient */
+.bg-mesh {
+  background: 
+    radial-gradient(at 40% 20%, hsla(228, 100%, 74%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, hsla(189, 100%, 56%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, hsla(355, 100%, 93%, 0.15) 0px, transparent 50%);
+}
+
+/* Pattern backgrounds */
+.bg-pattern-dots {
+  background-image: radial-gradient(circle, currentColor 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.bg-pattern-grid {
+  background-image: 
+    linear-gradient(to right, currentColor 1px, transparent 1px),
+    linear-gradient(to bottom, currentColor 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.bg-pattern-stripes {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(255, 255, 255, 0.05) 10px,
+    rgba(255, 255, 255, 0.05) 20px
+  );
+}
+
+/* ============================================
+   Border Utilities
+   ============================================ */
+
+/* Border radius */
+.rounded-none {
+  @apply rounded-none;
+}
+
+.rounded-sm {
+  @apply rounded-sm;
+}
+
+.rounded {
+  @apply rounded;
+}
+
+.rounded-md {
+  @apply rounded-md;
+}
+
+.rounded-lg {
+  @apply rounded-lg;
+}
+
+.rounded-xl {
+  @apply rounded-xl;
+}
+
+.rounded-2xl {
+  @apply rounded-2xl;
+}
+
+.rounded-3xl {
+  @apply rounded-3xl;
+}
+
+.rounded-full {
+  @apply rounded-full;
+}
+
+/* Border width */
+.border-0 {
+  @apply border-0;
+}
+
+.border {
+  @apply border;
+}
+
+.border-2 {
+  @apply border-2;
+}
+
+.border-4 {
+  @apply border-4;
+}
+
+.border-8 {
+  @apply border-8;
+}
+
+/* Border style */
+.border-solid {
+  @apply border-solid;
+}
+
+.border-dashed {
+  @apply border-dashed;
+}
+
+.border-dotted {
+  @apply border-dotted;
+}
+
+.border-none {
+  @apply border-none;
+}
+
+/* ============================================
+   Shadow Utilities
+   ============================================ */
+
+.shadow-xs {
+  @apply shadow-sm;
+}
+
+.shadow-sm {
+  @apply shadow-sm;
+}
+
+.shadow {
+  @apply shadow;
+}
+
+.shadow-md {
+  @apply shadow-md;
+}
+
+.shadow-lg {
+  @apply shadow-lg;
+}
+
+.shadow-xl {
+  @apply shadow-xl;
+}
+
+.shadow-2xl {
+  @apply shadow-2xl;
+}
+
+.shadow-none {
+  @apply shadow-none;
+}
+
+.shadow-inner {
+  @apply shadow-inner;
+}
+
+.shadow-glow-sm {
+  box-shadow: var(--shadow-glow-sm);
+}
+
+.shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+
+.shadow-glow-lg {
+  box-shadow: var(--shadow-glow-lg);
+}
+
+.shadow-glow-xl {
+  box-shadow: var(--shadow-glow-xl);
+}
+
+.shadow-neon {
+  box-shadow: 0 0 5px theme(colors.primary.400), 0 0 20px theme(colors.primary.600);
+}
+
+.shadow-elevated {
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================
+   Effect Utilities
+   ============================================ */
+
+/* Blur */
+.blur-sm {
+  @apply blur-sm;
+}
+
+.blur {
+  @apply blur;
+}
+
+.blur-md {
+  @apply blur-md;
+}
+
+.blur-lg {
+  @apply blur-lg;
+}
+
+.blur-xl {
+  @apply blur-xl;
+}
+
+/* Backdrop blur */
+.backdrop-blur-sm {
+  @apply backdrop-blur-sm;
+}
+
+.backdrop-blur {
+  @apply backdrop-blur;
+}
+
+.backdrop-blur-md {
+  @apply backdrop-blur-md;
+}
+
+.backdrop-blur-lg {
+  @apply backdrop-blur-lg;
+}
+
+.backdrop-blur-xl {
+  @apply backdrop-blur-xl;
+}
+
+/* Opacity */
+.opacity-0 {
+  @apply opacity-0;
+}
+
+.opacity-25 {
+  @apply opacity-25;
+}
+
+.opacity-50 {
+  @apply opacity-50;
+}
+
+.opacity-75 {
+  @apply opacity-75;
+}
+
+.opacity-100 {
+  @apply opacity-100;
+}
+
+/* Mix blend mode */
+.blend-normal {
+  mix-blend-mode: normal;
+}
+
+.blend-multiply {
+  mix-blend-mode: multiply;
+}
+
+.blend-screen {
+  mix-blend-mode: screen;
+}
+
+.blend-overlay {
+  mix-blend-mode: overlay;
+}
+
+.blend-darken {
+  mix-blend-mode: darken;
+}
+
+.blend-lighten {
+  mix-blend-mode: lighten;
+}
+
+.blend-color-dodge {
+  mix-blend-mode: color-dodge;
+}
+
+.blend-color-burn {
+  mix-blend-mode: color-burn;
+}
+
+.blend-hard-light {
+  mix-blend-mode: hard-light;
+}
+
+.blend-soft-light {
+  mix-blend-mode: soft-light;
+}
+
+.blend-difference {
+  mix-blend-mode: difference;
+}
+
+.blend-exclusion {
+  mix-blend-mode: exclusion;
+}
+
+.blend-hue {
+  mix-blend-mode: hue;
+}
+
+.blend-saturation {
+  mix-blend-mode: saturation;
+}
+
+.blend-color {
+  mix-blend-mode: color;
+}
+
+.blend-luminosity {
+  mix-blend-mode: luminosity;
+}
+
+/* ============================================
+   Interaction Utilities
+   ============================================ */
+
+/* Cursor */
+.cursor-auto {
+  @apply cursor-auto;
+}
+
+.cursor-default {
+  @apply cursor-default;
+}
+
+.cursor-pointer {
+  @apply cursor-pointer;
+}
+
+.cursor-wait {
+  @apply cursor-wait;
+}
+
+.cursor-text {
+  @apply cursor-text;
+}
+
+.cursor-move {
+  @apply cursor-move;
+}
+
+.cursor-not-allowed {
+  @apply cursor-not-allowed;
+}
+
+.cursor-grab {
+  @apply cursor-grab;
+}
+
+.cursor-grabbing {
+  @apply cursor-grabbing;
+}
+
+/* Pointer events */
+.pointer-events-none {
+  @apply pointer-events-none;
+}
+
+.pointer-events-auto {
+  @apply pointer-events-auto;
+}
+
+/* User select */
+.select-none {
+  @apply select-none;
+}
+
+.select-text {
+  @apply select-text;
+}
+
+.select-all {
+  @apply select-all;
+}
+
+.select-auto {
+  @apply select-auto;
+}
+
+/* ============================================
+   Transition Utilities
+   ============================================ */
+
+.transition {
+  @apply transition;
+}
+
+.transition-all {
+  @apply transition-all;
+}
+
+.transition-colors {
+  @apply transition-colors;
+}
+
+.transition-opacity {
+  @apply transition-opacity;
+}
+
+.transition-shadow {
+  @apply transition-shadow;
+}
+
+.transition-transform {
+  @apply transition-transform;
+}
+
+/* Duration */
+.duration-75 {
+  @apply duration-75;
+}
+
+.duration-100 {
+  @apply duration-100;
+}
+
+.duration-150 {
+  @apply duration-150;
+}
+
+.duration-200 {
+  @apply duration-200;
+}
+
+.duration-300 {
+  @apply duration-300;
+}
+
+.duration-500 {
+  @apply duration-500;
+}
+
+.duration-700 {
+  @apply duration-700;
+}
+
+.duration-1000 {
+  @apply duration-1000;
+}
+
+/* Easing */
+.ease-linear {
+  @apply ease-linear;
+}
+
+.ease-in {
+  @apply ease-in;
+}
+
+.ease-out {
+  @apply ease-out;
+}
+
+.ease-in-out {
+  @apply ease-in-out;
+}
+
+/* ============================================
+   Visibility Utilities
+   ============================================ */
+
+.visible {
+  @apply visible;
+}
+
+.invisible {
+  @apply invisible;
+}
+
+.collapse {
+  @apply collapse;
+}
+
+/* Display */
+.block {
+  @apply block;
+}
+
+.inline-block {
+  @apply inline-block;
+}
+
+.inline {
+  @apply inline;
+}
+
+.flex {
+  @apply flex;
+}
+
+.inline-flex {
+  @apply inline-flex;
+}
+
+.grid {
+  @apply grid;
+}
+
+.hidden {
+  @apply hidden;
+}
+
+/* ============================================
+   Overflow Utilities
+   ============================================ */
+
+.overflow-auto {
+  @apply overflow-auto;
+}
+
+.overflow-hidden {
+  @apply overflow-hidden;
+}
+
+.overflow-visible {
+  @apply overflow-visible;
+}
+
+.overflow-scroll {
+  @apply overflow-scroll;
+}
+
+.overflow-x-auto {
+  @apply overflow-x-auto;
+}
+
+.overflow-y-auto {
+  @apply overflow-y-auto;
+}
+
+.overflow-x-hidden {
+  @apply overflow-x-hidden;
+}
+
+.overflow-y-hidden {
+  @apply overflow-y-hidden;
+}
+
+/* Scroll behavior */
+.scroll-smooth {
+  @apply scroll-smooth;
+}
+
+.scroll-auto {
+  @apply scroll-auto;
+}
+
+/* ============================================
+   Accessibility Utilities
+   ============================================ */
+
+.sr-only {
+  @apply sr-only;
+}
+
+.not-sr-only {
+  @apply not-sr-only;
+}
+
+/* Focus visible */
+.focus-visible {
+  @apply focus-visible;
+}
+
+/* ============================================
+   Print Utilities
+   ============================================ */
+
+.print-block {
+  @apply print:block;
+}
+
+.print-hidden {
+  @apply print:hidden;
+}
+
+.print-text-black {
+  @apply print:text-black;
+}
+
+.print-bg-white {
+  @apply print:bg-white;
+}
+
+/* ============================================
+   Custom Utilities
+   ============================================ */
+
+/* Glass effect */
+.glass {
+  @apply bg-white/5 backdrop-blur-xl border border-white/10;
+}
+
+.glass-dark {
+  @apply bg-black/30 backdrop-blur-xl border border-white/5;
+}
+
+/* Text gradient */
+.text-gradient {
+  @apply bg-gradient-to-r from-primary-400 via-secondary-400 to-accent-cyan bg-clip-text text-transparent;
+}
+
+.text-gradient-animated {
+  @apply bg-gradient-to-r from-primary-400 via-secondary-400 to-accent-cyan bg-clip-text text-transparent;
+  background-size: 200% auto;
+  animation: gradient-shift 3s linear infinite;
+}
+
+/* Card styles */
+.card {
+  @apply bg-editor-card rounded-2xl border border-editor-border shadow-lg;
+}
+
+.card-glass {
+  @apply bg-editor-card/70 backdrop-blur-xl border border-primary-500/10 shadow-glow;
+}
+
+.card-hover {
+  @apply card hover:border-primary-500/30 hover:shadow-glow-lg transition-all duration-300;
+}
+
+/* Button styles */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* Input styles */
+.input {
+  @apply w-full px-4 py-2.5 bg-surface-800 border border-surface-600 rounded-xl text-white placeholder-surface-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all duration-200;
+}
+
+.input-glass {
+  @apply input bg-white/5 border-white/10;
+}
+
+/* Scrollbar utilities */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-dark::-webkit-scrollbar-track {
+  @apply bg-surface-900/50;
+}
+
+.scrollbar-dark::-webkit-scrollbar-thumb {
+  @apply bg-primary-500/30 rounded-full;
+}
+
+.scrollbar-dark::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary-500/50;
+}
+
+/* Safe area */
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.safe-left {
+  padding-left: env(safe-area-inset-left, 0);
+}
+
+.safe-right {
+  padding-right: env(safe-area-inset-right, 0);
+}

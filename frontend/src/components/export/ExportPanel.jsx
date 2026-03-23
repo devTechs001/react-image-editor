@@ -1,287 +1,499 @@
 // frontend/src/components/export/ExportPanel.jsx
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Download,
+  Image as ImageIcon,
+  FileImage,
+  FileVideo,
+  FileText,
   Settings,
-  Image,
-  Video,
-  File,
+  Sliders,
   Check,
-  ChevronDown,
-  Info
+  X,
+  Loader2,
+  Palette,
+  Maximize,
+  File,
+  Layers,
+  WaterDrop,
+  Type
 } from 'lucide-react';
-import { useEditor } from '@/contexts/EditorContext';
+import { cn } from '@/utils/helpers/cn';
+import { useImageExport } from '@/hooks/export/useImageExport';
+import {
+  ImageFormat,
+  ImageQuality,
+  CompressionPreset
+} from '@/services/export';
+import { WatermarkPosition, WatermarkType } from '@/services/export/watermark';
+import { PaperSize, Orientation } from '@/services/export/pdfExporter';
 import Button from '@/components/ui/Button';
 import Slider from '@/components/ui/Slider';
+import Select from '@/components/ui/Select';
 import Switch from '@/components/ui/Switch';
 import Modal from '@/components/ui/Modal';
-import ProgressBar from '@/components/ui/ProgressBar';
-import { cn } from '@/utils/helpers/cn';
-import toast from 'react-hot-toast';
+import Tabs from '@/components/ui/Tabs';
 
-const formats = {
-  image: [
-    { id: 'png', name: 'PNG', desc: 'Lossless, supports transparency', ext: '.png' },
-    { id: 'jpg', name: 'JPEG', desc: 'Smaller files, no transparency', ext: '.jpg' },
-    { id: 'webp', name: 'WebP', desc: 'Modern format, best compression', ext: '.webp' },
-    { id: 'svg', name: 'SVG', desc: 'Vector format, scalable', ext: '.svg' },
-    { id: 'pdf', name: 'PDF', desc: 'Document format', ext: '.pdf' }
-  ],
-  video: [
-    { id: 'mp4', name: 'MP4', desc: 'Most compatible', ext: '.mp4' },
-    { id: 'webm', name: 'WebM', desc: 'Web optimized', ext: '.webm' },
-    { id: 'gif', name: 'GIF', desc: 'Animated image', ext: '.gif' },
-    { id: 'mov', name: 'MOV', desc: 'Apple format', ext: '.mov' }
-  ]
-};
+/**
+ * Export Panel Component
+ * Full-featured export interface with format, quality, and size options
+ */
+export function ExportPanel({ canvas, onClose, onExportComplete }) {
+  const [activeTab, setActiveTab] = useState('image');
+  const [showSettings, setShowSettings] = useState(false);
 
-const presets = [
-  { id: 'web', name: 'Web', quality: 80, scale: 1 },
-  { id: 'social', name: 'Social Media', quality: 90, scale: 1 },
-  { id: 'print', name: 'Print', quality: 100, scale: 2 },
-  { id: 'custom', name: 'Custom', quality: 100, scale: 1 }
-];
+  const {
+    isExporting,
+    progress,
+    error,
+    exportAndDownload,
+    exportCompressed
+  } = useImageExport(canvas, {
+    format: ImageFormat.PNG,
+    quality: ImageQuality.HIGH
+  });
 
-const socialPresets = [
-  { id: 'instagram-post', name: 'Instagram Post', size: '1080 × 1080' },
-  { id: 'instagram-story', name: 'Instagram Story', size: '1080 × 1920' },
-  { id: 'facebook-post', name: 'Facebook Post', size: '1200 × 630' },
-  { id: 'twitter-post', name: 'Twitter Post', size: '1200 × 675' },
-  { id: 'youtube-thumbnail', name: 'YouTube Thumbnail', size: '1280 × 720' },
-  { id: 'linkedin-post', name: 'LinkedIn Post', size: '1200 × 627' }
-];
-
-export default function ExportPanel({ isOpen, onClose, projectType = 'image' }) {
-  const { canvas, project, exportSettings, setExportSettings } = useEditor();
-  const [activePreset, setActivePreset] = useState('custom');
-  const [isExporting, setIsExporting] = useState(false);
-  const [exportProgress, setExportProgress] = useState(0);
-  const [selectedFormat, setSelectedFormat] = useState(projectType === 'image' ? 'png' : 'mp4');
-  const [showAdvanced, setShowAdvanced] = useState(false);
-
-  const currentFormats = formats[projectType] || formats.image;
-
-  const handleExport = async () => {
-    setIsExporting(true);
-    setExportProgress(0);
-
+  const handleQuickExport = useCallback(async () => {
     try {
-      // Simulate export progress
-      for (let i = 0; i <= 100; i += 10) {
-        await new Promise(resolve => setTimeout(resolve, 200));
-        setExportProgress(i);
-      }
-
-      // In real implementation, call export API
-      toast.success('Export complete!');
-      onClose();
-    } catch (error) {
-      toast.error('Export failed');
-    } finally {
-      setIsExporting(false);
+      await exportAndDownload({ filename: 'export' });
+      onExportComplete?.();
+    } catch (err) {
+      console.error('Export failed:', err);
     }
-  };
+  }, [exportAndDownload, onExportComplete]);
 
-  const handlePresetChange = (presetId) => {
-    setActivePreset(presetId);
-    const preset = presets.find(p => p.id === presetId);
-    if (preset) {
-      setExportSettings({
-        quality: preset.quality,
-        scale: preset.scale
-      });
-    }
-  };
+  return (
+    <motion.div
+      initial={{ x: 400, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: 400, opacity: 0 }}
+      className="fixed right-0 top-0 h-full w-96 bg-surface-900 border-l border-surface-700 shadow-2xl z-50"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-surface-700">
+        <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+          <Download className="w-5 h-5" />
+          Export
+        </h2>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setShowSettings(true)}
+          >
+            <Settings className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={onClose}
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
 
-  const estimatedSize = Math.round(
-    (canvas.width * canvas.height * exportSettings.scale * exportSettings.scale * 
-    (exportSettings.quality / 100) * (selectedFormat === 'png' ? 4 : 0.5)) / 1024
+      {/* Tabs */}
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="p-4"
+        tabs={[
+          { value: 'image', label: 'Image', icon: ImageIcon },
+          { value: 'gif', label: 'GIF', icon: FileImage },
+          { value: 'video', label: 'Video', icon: FileVideo },
+          { value: 'pdf', label: 'PDF', icon: FileText }
+        ]}
+      />
+
+      {/* Content */}
+      <div className="p-4 space-y-4">
+        {activeTab === 'image' && (
+          <ImageExportOptions
+            canvas={canvas}
+            isExporting={isExporting}
+            progress={progress}
+            error={error}
+            onExport={handleQuickExport}
+          />
+        )}
+        {activeTab === 'gif' && (
+          <GifExportOptions canvas={canvas} />
+        )}
+        {activeTab === 'video' && (
+          <VideoExportOptions canvas={canvas} />
+        )}
+        {activeTab === 'pdf' && (
+          <PdfExportOptions canvas={canvas} />
+        )}
+      </div>
+
+      {/* Settings Modal */}
+      <AnimatePresence>
+        {showSettings && (
+          <ExportSettingsModal
+            isOpen={showSettings}
+            onClose={() => setShowSettings(false)}
+          />
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
+}
+
+/**
+ * Image Export Options
+ */
+function ImageExportOptions({ canvas, isExporting, progress, error, onExport }) {
+  const [format, setFormat] = useState(ImageFormat.PNG);
+  const [quality, setQuality] = useState(ImageQuality.HIGH);
+  const [scale, setScale] = useState(1);
+  const [includeMetadata, setIncludeMetadata] = useState(false);
+  const [addWatermark, setAddWatermark] = useState(false);
+
+  const formatOptions = [
+    { value: ImageFormat.PNG, label: 'PNG', description: 'Lossless, supports transparency' },
+    { value: ImageFormat.JPEG, label: 'JPEG', description: 'Small size, no transparency' },
+    { value: ImageFormat.WEBP, label: 'WebP', description: 'Modern format, best compression' },
+    { value: ImageFormat.AVIF, label: 'AVIF', description: 'Next-gen compression' }
+  ];
+
+  const qualityOptions = [
+    { value: ImageQuality.LOSSLESS, label: 'Lossless' },
+    { value: ImageQuality.HIGH, label: 'High (92%)' },
+    { value: ImageQuality.MEDIUM, label: 'Medium (75%)' },
+    { value: ImageQuality.LOW, label: 'Low (50%)' }
+  ];
+
+  const scaleOptions = [
+    { value: 0.25, label: '25%' },
+    { value: 0.5, label: '50%' },
+    { value: 1, label: '100%' },
+    { value: 2, label: '200%' }
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Format Selection */}
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-surface-300 flex items-center gap-2">
+          <FileImage className="w-4 h-4" />
+          Format
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          {formatOptions.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setFormat(opt.value)}
+              className={cn(
+                'p-3 rounded-xl border text-left transition-all',
+                format === opt.value
+                  ? 'border-primary-500 bg-primary-500/10 text-white'
+                  : 'border-surface-600 bg-surface-800 text-surface-400 hover:border-surface-500'
+              )}
+            >
+              <div className="font-medium">{opt.label}</div>
+              <div className="text-xs opacity-60">{opt.description}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Quality */}
+      {(format === ImageFormat.JPEG || format === ImageFormat.WEBP) && (
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-surface-300 flex items-center gap-2">
+            <Sliders className="w-4 h-4" />
+            Quality
+          </label>
+          <Select
+            value={quality}
+            onChange={setQuality}
+            options={qualityOptions}
+          />
+        </div>
+      )}
+
+      {/* Scale */}
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-surface-300 flex items-center gap-2">
+          <Maximize className="w-4 h-4" />
+          Scale: {scale * 100}%
+        </label>
+        <Slider
+          value={scale}
+          onChange={setScale}
+          min={0.25}
+          max={2}
+          step={0.25}
+          options={scaleOptions}
+        />
+      </div>
+
+      {/* Options */}
+      <div className="space-y-3 pt-4 border-t border-surface-700">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-surface-300 flex items-center gap-2">
+            <Type className="w-4 h-4" />
+            Include metadata
+          </span>
+          <Switch
+            checked={includeMetadata}
+            onChange={setIncludeMetadata}
+          />
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-surface-300 flex items-center gap-2">
+            <WaterDrop className="w-4 h-4" />
+            Add watermark
+          </span>
+          <Switch
+            checked={addWatermark}
+            onChange={setAddWatermark}
+          />
+        </div>
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+          {error}
+        </div>
+      )}
+
+      {/* Export Button */}
+      <Button
+        variant="primary"
+        size="lg"
+        fullWidth
+        onClick={onExport}
+        loading={isExporting}
+        icon={Download}
+        className="mt-4"
+      >
+        {isExporting ? `Exporting... ${Math.round(progress)}%` : 'Export Image'}
+      </Button>
+
+      {/* Quick Export Options */}
+      <div className="grid grid-cols-2 gap-2">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => {}}
+        >
+          <Layers className="w-4 h-4" />
+          Export Layers
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => {}}
+        >
+          <Palette className="w-4 h-4" />
+          Export Preset
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * GIF Export Options
+ */
+function GifExportOptions({ canvas }) {
+  const [fps, setFps] = useState(15);
+  const [quality, setQuality] = useState('high');
+
+  return (
+    <div className="space-y-6">
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-surface-300">
+          Frame Rate: {fps} FPS
+        </label>
+        <Slider
+          value={fps}
+          onChange={setFps}
+          min={1}
+          max={30}
+          step={1}
+        />
+      </div>
+
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-surface-300">Quality</label>
+        <Select
+          value={quality}
+          onChange={setQuality}
+          options={[
+            { value: 'low', label: 'Low (64 colors)' },
+            { value: 'medium', label: 'Medium (128 colors)' },
+            { value: 'high', label: 'High (256 colors)' }
+          ]}
+        />
+      </div>
+
+      <Button variant="primary" size="lg" fullWidth icon={FileImage}>
+        Export GIF
+      </Button>
+    </div>
+  );
+}
+
+/**
+ * Video Export Options
+ */
+function VideoExportOptions({ canvas }) {
+  const [format, setFormat] = useState('webm');
+  const [quality, setQuality] = useState('1080p');
+
+  return (
+    <div className="space-y-6">
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-surface-300">Format</label>
+        <Select
+          value={format}
+          onChange={setFormat}
+          options={[
+            { value: 'webm', label: 'WebM' },
+            { value: 'mp4', label: 'MP4' },
+            { value: 'gif', label: 'GIF' }
+          ]}
+        />
+      </div>
+
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-surface-300">Resolution</label>
+        <Select
+          value={quality}
+          onChange={setQuality}
+          options={[
+            { value: '360p', label: '360p (640x360)' },
+            { value: '720p', label: '720p (1280x720)' },
+            { value: '1080p', label: '1080p (1920x1080)' },
+            { value: '4k', label: '4K (3840x2160)' }
+          ]}
+        />
+      </div>
+
+      <Button variant="primary" size="lg" fullWidth icon={FileVideo}>
+        Export Video
+      </Button>
+    </div>
+  );
+}
+
+/**
+ * PDF Export Options
+ */
+function PdfExportOptions({ canvas }) {
+  const [paperSize, setPaperSize] = useState(PaperSize.A4);
+  const [orientation, setOrientation] = useState(Orientation.PORTRAIT);
+
+  return (
+    <div className="space-y-6">
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-surface-300">Paper Size</label>
+        <Select
+          value={paperSize}
+          onChange={setPaperSize}
+          options={[
+            { value: PaperSize.A4, label: 'A4 (210 x 297 mm)' },
+            { value: PaperSize.A3, label: 'A3 (297 x 420 mm)' },
+            { value: PaperSize.LETTER, label: 'Letter (8.5" x 11")' }
+          ]}
+        />
+      </div>
+
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-surface-300">Orientation</label>
+        <div className="flex gap-2">
+          <Button
+            variant={orientation === Orientation.PORTRAIT ? 'primary' : 'secondary'}
+            onClick={() => setOrientation(Orientation.PORTRAIT)}
+            className="flex-1"
+          >
+            Portrait
+          </Button>
+          <Button
+            variant={orientation === Orientation.LANDSCAPE ? 'primary' : 'secondary'}
+            onClick={() => setOrientation(Orientation.LANDSCAPE)}
+            className="flex-1"
+          >
+            Landscape
+          </Button>
+        </div>
+      </div>
+
+      <Button variant="primary" size="lg" fullWidth icon={FileText}>
+        Export PDF
+      </Button>
+    </div>
+  );
+}
+
+/**
+ * Export Settings Modal
+ */
+function ExportSettingsModal({ isOpen, onClose }) {
+  const [defaultFormat, setDefaultFormat] = useState(ImageFormat.PNG);
+  const [defaultQuality, setDefaultQuality] = useState(ImageQuality.HIGH);
+  const [autoOptimize, setAutoOptimize] = useState(true);
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Export"
-      size="lg"
+      title="Export Settings"
+      size="md"
     >
-      {isExporting ? (
-        <div className="py-12 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-primary-500/20 flex items-center justify-center mx-auto mb-6">
-            <Download className="w-8 h-8 text-primary-400 animate-bounce" />
-          </div>
-          <h3 className="text-lg font-semibold text-white mb-2">Exporting...</h3>
-          <p className="text-surface-400 mb-6">Please wait while we prepare your file</p>
-          <div className="max-w-xs mx-auto">
-            <ProgressBar value={exportProgress} animated showLabel />
-          </div>
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-surface-300">Default Format</label>
+          <Select
+            value={defaultFormat}
+            onChange={setDefaultFormat}
+            options={[
+              { value: ImageFormat.PNG, label: 'PNG' },
+              { value: ImageFormat.JPEG, label: 'JPEG' },
+              { value: ImageFormat.WEBP, label: 'WebP' }
+            ]}
+          />
         </div>
-      ) : (
-        <div className="space-y-6">
-          {/* Format Selection */}
-          <div>
-            <h3 className="text-sm font-medium text-surface-300 mb-3">Format</h3>
-            <div className="grid grid-cols-5 gap-2">
-              {currentFormats.map((format) => (
-                <button
-                  key={format.id}
-                  onClick={() => setSelectedFormat(format.id)}
-                  className={cn(
-                    'p-3 rounded-xl border text-center transition-all',
-                    selectedFormat === format.id
-                      ? 'border-primary-500 bg-primary-500/10'
-                      : 'border-editor-border hover:border-surface-600'
-                  )}
-                >
-                  <span className="text-sm font-semibold text-white">{format.name}</span>
-                  <span className="block text-2xs text-surface-500 mt-1">{format.ext}</span>
-                </button>
-              ))}
-            </div>
-          </div>
 
-          {/* Quality Presets */}
-          <div>
-            <h3 className="text-sm font-medium text-surface-300 mb-3">Preset</h3>
-            <div className="grid grid-cols-4 gap-2">
-              {presets.map((preset) => (
-                <button
-                  key={preset.id}
-                  onClick={() => handlePresetChange(preset.id)}
-                  className={cn(
-                    'p-3 rounded-xl border transition-all',
-                    activePreset === preset.id
-                      ? 'border-primary-500 bg-primary-500/10'
-                      : 'border-editor-border hover:border-surface-600'
-                  )}
-                >
-                  <span className="text-sm font-medium text-white">{preset.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Quality & Scale */}
-          <div className="grid grid-cols-2 gap-6">
-            <Slider
-              label="Quality"
-              value={[exportSettings.quality]}
-              onValueChange={([value]) => {
-                setExportSettings({ quality: value });
-                setActivePreset('custom');
-              }}
-              min={1}
-              max={100}
-              valueSuffix="%"
-            />
-            <Slider
-              label="Scale"
-              value={[exportSettings.scale * 100]}
-              onValueChange={([value]) => {
-                setExportSettings({ scale: value / 100 });
-                setActivePreset('custom');
-              }}
-              min={25}
-              max={400}
-              valueSuffix="%"
-            />
-          </div>
-
-          {/* Output Size */}
-          <div className="p-4 rounded-xl bg-editor-card border border-editor-border">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-surface-400">Output Size</span>
-              <span className="text-sm font-mono text-white">
-                {Math.round(canvas.width * exportSettings.scale)} × {Math.round(canvas.height * exportSettings.scale)}px
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-surface-400">Estimated File Size</span>
-              <span className="text-sm font-mono text-white">
-                ~{estimatedSize > 1024 ? `${(estimatedSize / 1024).toFixed(1)} MB` : `${estimatedSize} KB`}
-              </span>
-            </div>
-          </div>
-
-          {/* Social Media Presets */}
-          <div>
-            <button
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className="flex items-center gap-2 text-sm text-surface-400 hover:text-white transition-colors"
-            >
-              <Settings className="w-4 h-4" />
-              Advanced Options
-              <ChevronDown className={cn(
-                'w-4 h-4 transition-transform',
-                showAdvanced && 'rotate-180'
-              )} />
-            </button>
-
-            <AnimatePresence>
-              {showAdvanced && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden"
-                >
-                  <div className="pt-4 space-y-4">
-                    <Switch
-                      label="Preserve metadata"
-                      description="Include EXIF and other metadata"
-                      checked={exportSettings.preserveMetadata}
-                      onCheckedChange={(checked) => setExportSettings({ preserveMetadata: checked })}
-                    />
-                    <Switch
-                      label="Include watermark"
-                      description="Add watermark to exported file"
-                      checked={exportSettings.watermark?.enabled}
-                      onCheckedChange={(checked) => setExportSettings({ watermark: { ...exportSettings.watermark, enabled: checked } })}
-                    />
-                    <Switch
-                      label="Optimize for web"
-                      description="Apply additional compression"
-                      checked={exportSettings.webOptimize}
-                      onCheckedChange={(checked) => setExportSettings({ webOptimize: checked })}
-                    />
-
-                    {/* Social Media Quick Resize */}
-                    <div>
-                      <h4 className="text-xs font-medium text-surface-500 mb-2">Quick Resize for Social</h4>
-                      <div className="grid grid-cols-3 gap-2">
-                        {socialPresets.map((preset) => (
-                          <button
-                            key={preset.id}
-                            className="p-2 rounded-lg bg-surface-800 border border-surface-700 hover:border-primary-500/50 transition-all text-left"
-                          >
-                            <span className="text-xs font-medium text-white">{preset.name}</span>
-                            <span className="block text-2xs text-surface-500">{preset.size}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center justify-between pt-4 border-t border-editor-border">
-            <div className="flex items-center gap-2 text-sm text-surface-500">
-              <Info className="w-4 h-4" />
-              <span>This will use 1 export credit</span>
-            </div>
-            <div className="flex gap-3">
-              <Button variant="ghost" onClick={onClose}>Cancel</Button>
-              <Button variant="primary" onClick={handleExport} icon={Download}>
-                Export {selectedFormat.toUpperCase()}
-              </Button>
-            </div>
-          </div>
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-surface-300">Default Quality</label>
+          <Select
+            value={defaultQuality}
+            onChange={setDefaultQuality}
+            options={[
+              { value: ImageQuality.LOSSLESS, label: 'Lossless' },
+              { value: ImageQuality.HIGH, label: 'High' },
+              { value: ImageQuality.MEDIUM, label: 'Medium' }
+            ]}
+          />
         </div>
-      )}
+
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-surface-300">Auto-optimize for web</span>
+          <Switch
+            checked={autoOptimize}
+            onChange={setAutoOptimize}
+          />
+        </div>
+
+        <div className="flex gap-3 pt-4">
+          <Button variant="secondary" onClick={onClose} className="flex-1">
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={onClose} className="flex-1">
+            <Check className="w-4 h-4" />
+            Save Settings
+          </Button>
+        </div>
+      </div>
     </Modal>
   );
 }
+
+export default ExportPanel;

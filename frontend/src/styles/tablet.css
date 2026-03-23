@@ -1,0 +1,436 @@
+/* frontend/src/styles/tablet.css */
+/* ============================================
+   Tablet Responsive Styles
+   Breakpoint: 640px - 1024px
+   ============================================ */
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  /* Typography Adjustments */
+  :root {
+    --text-xs: 0.75rem;
+    --text-sm: 0.8125rem;
+    --text-base: 0.875rem;
+    --text-lg: 1rem;
+    --text-xl: 1.125rem;
+    --text-2xl: 1.375rem;
+    --text-3xl: 1.625rem;
+  }
+
+  /* Layout */
+  .container {
+    @apply px-6;
+  }
+
+  .page-padding {
+    @apply px-6 py-6;
+  }
+
+  /* Tablet Grid */
+  .tablet-grid {
+    @apply grid grid-cols-2 gap-4;
+  }
+
+  .tablet-grid-3 {
+    @apply grid grid-cols-3 gap-4;
+  }
+
+  .tablet-grid-4 {
+    @apply grid grid-cols-4 gap-4;
+  }
+
+  /* Tablet Navigation */
+  .tablet-sidebar {
+    @apply w-64;
+    @apply fixed left-0 top-0 bottom-0;
+    @apply bg-editor-surface;
+    @apply border-r border-editor-border;
+    @apply z-40;
+  }
+
+  .tablet-sidebar-content {
+    @apply h-full;
+    @apply overflow-y-auto;
+    @apply p-4;
+  }
+
+  .tablet-main-content {
+    @apply ml-64;
+  }
+
+  /* Tablet Canvas */
+  .tablet-canvas-container {
+    @apply ml-64;
+    @apply p-6;
+  }
+
+  .tablet-canvas-wrapper {
+    @apply rounded-2xl;
+    @apply overflow-hidden;
+    @apply shadow-glow;
+  }
+
+  /* Tablet Panels */
+  .tablet-panel {
+    @apply fixed right-0 top-0 bottom-0;
+    @apply w-80;
+    @apply bg-editor-surface;
+    @apply border-l border-editor-border;
+    @apply z-40;
+    @apply overflow-y-auto;
+  }
+
+  .tablet-panel-collapsed {
+    @apply w-16;
+    @apply overflow-hidden;
+  }
+
+  /* Tablet Toolbar */
+  .tablet-toolbar {
+    @apply h-14;
+    @apply px-6;
+    @apply bg-editor-surface;
+    @apply border-b border-editor-border;
+  }
+
+  .tablet-toolbar-content {
+    @apply flex items-center justify-between;
+    @apply h-full;
+  }
+
+  .tablet-toolbar-tools {
+    @apply flex items-center gap-2;
+  }
+
+  .tablet-toolbar-actions {
+    @apply flex items-center gap-3;
+  }
+
+  /* Tablet Cards */
+  .tablet-card {
+    @apply rounded-2xl;
+    @apply p-5;
+  }
+
+  /* Tablet Buttons */
+  .tablet-btn {
+    @apply px-4 py-2.5;
+    @apply text-sm;
+    @apply rounded-xl;
+  }
+
+  .tablet-btn-icon {
+    @apply p-2.5;
+    @apply rounded-xl;
+  }
+
+  /* Tablet Inputs */
+  .tablet-input {
+    @apply px-4 py-2.5;
+    @apply text-sm;
+    @apply rounded-xl;
+  }
+
+  /* Tablet Slider */
+  .tablet-slider {
+    @apply h-10;
+  }
+
+  .tablet-slider-track {
+    @apply h-1.5;
+  }
+
+  .tablet-slider-thumb {
+    @apply w-5 h-5;
+  }
+
+  /* Tablet Modal */
+  .tablet-modal {
+    @apply fixed inset-0;
+    @apply z-50;
+    @apply flex items-center justify-center;
+    @apply p-6;
+  }
+
+  .tablet-modal-content {
+    @apply w-full max-w-lg;
+    @apply max-h-[80vh];
+    @apply bg-editor-surface;
+    @apply rounded-3xl;
+    @apply overflow-hidden;
+    @apply shadow-elevated;
+  }
+
+  .tablet-modal-overlay {
+    @apply absolute inset-0;
+    @apply bg-black/60;
+    @apply backdrop-blur-sm;
+  }
+
+  /* Tablet Drawer */
+  .tablet-drawer {
+    @apply fixed inset-y-0 right-0;
+    @apply w-96;
+    @apply bg-editor-surface;
+    @apply z-50;
+    @apply shadow-elevated;
+  }
+
+  /* Tablet Toast */
+  .tablet-toast {
+    @apply fixed;
+    @apply top-6 right-6;
+    @apply z-50;
+    @apply w-96;
+  }
+
+  .tablet-toast-item {
+    @apply rounded-2xl;
+    @apply p-4;
+    @apply shadow-elevated;
+    @apply mb-3;
+  }
+
+  /* Tablet List */
+  .tablet-list-item {
+    @apply flex items-center gap-4;
+    @apply p-4;
+    @apply min-h-[64px];
+    @apply border-b border-editor-border;
+    @apply hover:bg-hover;
+    @apply transition-colors;
+  }
+
+  /* Tablet Tabs */
+  .tablet-tabs {
+    @apply flex;
+    @apply border-b border-editor-border;
+  }
+
+  .tablet-tab {
+    @apply px-4 py-3;
+    @apply text-sm font-medium;
+    @apply text-surface-400;
+    @apply border-b-2 border-transparent;
+    @apply hover:text-white;
+    @apply transition-colors;
+  }
+
+  .tablet-tab.active {
+    @apply text-primary-400;
+    @apply border-primary-500;
+  }
+
+  /* Tablet Accordion */
+  .tablet-accordion-item {
+    @apply border-b border-editor-border;
+  }
+
+  .tablet-accordion-header {
+    @apply flex items-center justify-between;
+    @apply p-4;
+    @apply cursor-pointer;
+    @apply hover:bg-hover;
+    @apply transition-colors;
+  }
+
+  .tablet-accordion-content {
+    @apply p-4 pt-0;
+  }
+
+  /* Tablet Avatar Group */
+  .tablet-avatar-group {
+    @apply flex -space-x-2;
+  }
+
+  .tablet-avatar-group-item {
+    @apply w-10 h-10;
+    @apply rounded-full;
+    @apply border-2 border-editor-surface;
+  }
+
+  /* Tablet Stats */
+  .tablet-stats {
+    @apply grid grid-cols-2 gap-4;
+  }
+
+  .tablet-stat-item {
+    @apply p-4;
+    @apply rounded-2xl;
+    @apply bg-surface-800;
+  }
+
+  .tablet-stat-value {
+    @apply text-2xl font-bold;
+    @apply text-white;
+  }
+
+  .tablet-stat-label {
+    @apply text-sm;
+    @apply text-surface-400;
+  }
+
+  /* Tablet Chart Container */
+  .tablet-chart {
+    @apply h-64;
+    @apply rounded-2xl;
+    @apply bg-surface-800;
+    @apply p-4;
+  }
+
+  /* Tablet Timeline */
+  .tablet-timeline {
+    @apply h-32;
+    @apply bg-surface-800;
+    @apply rounded-xl;
+    @apply overflow-hidden;
+  }
+
+  .tablet-timeline-track {
+    @apply h-16;
+    @apply bg-surface-700;
+    @apply rounded-lg;
+  }
+
+  /* Tablet Color Picker */
+  .tablet-color-picker {
+    @apply grid grid-cols-6 gap-2;
+  }
+
+  .tablet-color-swatch {
+    @apply w-10 h-10;
+    @apply rounded-xl;
+    @apply cursor-pointer;
+    @apply transition-transform;
+    @apply hover:scale-110;
+  }
+
+  /* Tablet Font Picker */
+  .tablet-font-grid {
+    @apply grid grid-cols-3 gap-3;
+  }
+
+  .tablet-font-item {
+    @apply p-3;
+    @apply rounded-xl;
+    @apply bg-surface-800;
+    @apply cursor-pointer;
+    @apply hover:bg-hover;
+    @apply transition-colors;
+  }
+
+  /* Tablet Layer Item */
+  .tablet-layer-item {
+    @apply flex items-center gap-3;
+    @apply p-3;
+    @apply rounded-xl;
+    @apply hover:bg-hover;
+    @apply cursor-pointer;
+    @apply transition-colors;
+  }
+
+  .tablet-layer-thumbnail {
+    @apply w-12 h-12;
+    @apply rounded-lg;
+    @apply bg-surface-700;
+  }
+
+  .tablet-layer-info {
+    @apply flex-1;
+  }
+
+  .tablet-layer-name {
+    @apply text-sm font-medium;
+    @apply text-white;
+  }
+
+  .tablet-layer-type {
+    @apply text-xs;
+    @apply text-surface-400;
+  }
+
+  /* Tablet Filter Preview */
+  .tablet-filter-grid {
+    @apply grid grid-cols-4 gap-3;
+  }
+
+  .tablet-filter-item {
+    @apply aspect-square;
+    @apply rounded-xl;
+    @apply overflow-hidden;
+    @apply cursor-pointer;
+    @apply ring-2 ring-transparent;
+    @apply hover:ring-primary-500;
+    @apply transition-all;
+  }
+
+  .tablet-filter-item.active {
+    @apply ring-primary-500;
+    @apply ring-2;
+  }
+
+  /* Tablet Export Options */
+  .tablet-export-grid {
+    @apply grid grid-cols-2 gap-4;
+  }
+
+  .tablet-export-option {
+    @apply p-4;
+    @apply rounded-2xl;
+    @apply bg-surface-800;
+    @apply cursor-pointer;
+    @apply hover:bg-hover;
+    @apply transition-colors;
+  }
+
+  .tablet-export-icon {
+    @apply w-10 h-10;
+    @apply mb-3;
+  }
+
+  .tablet-export-label {
+    @apply text-sm font-medium;
+    @apply text-white;
+  }
+
+  .tablet-export-desc {
+    @apply text-xs;
+    @apply text-surface-400;
+  }
+
+  /* Hide desktop-only elements */
+  .hidden-tablet {
+    @apply hidden;
+  }
+
+  /* Hide mobile-only elements */
+  .tablet-only {
+    @apply block;
+  }
+}
+
+/* Tablet Landscape */
+@media (min-width: 641px) and (max-width: 1024px) and (orientation: landscape) {
+  .tablet-sidebar {
+    @apply w-56;
+  }
+
+  .tablet-main-content {
+    @apply ml-56;
+  }
+
+  .tablet-canvas-container {
+    @apply ml-56;
+  }
+
+  .tablet-panel {
+    @apply w-72;
+  }
+
+  .tablet-modal-content {
+    @apply max-w-2xl;
+  }
+
+  .tablet-timeline {
+    @apply h-24;
+  }
+}

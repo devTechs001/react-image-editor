@@ -156,13 +156,13 @@ export default function Editor() {
           <div>
             <input
               type="text"
-              value={project.name}
-              onChange={(e) => setProject({ name: e.target.value })}
+              value={project?.name || 'Untitled Project'}
+              onChange={(e) => setProject({ ...project, name: e.target.value })}
               className="bg-transparent text-white font-medium text-sm focus:outline-none focus:ring-0 max-w-[200px]"
             />
             <div className="flex items-center gap-2 text-xs text-surface-500">
-              {project.modified && <span className="text-amber-400">• Unsaved changes</span>}
-              {project.lastSaved && (
+              {project?.modified && <span className="text-amber-400">• Unsaved changes</span>}
+              {project?.lastSaved && (
                 <span>Last saved {new Date(project.lastSaved).toLocaleTimeString()}</span>
               )}
             </div>

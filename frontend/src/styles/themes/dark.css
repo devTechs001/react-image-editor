@@ -1,0 +1,118 @@
+/* frontend/src/styles/themes/dark.css */
+/* Dark Theme - Default Theme */
+
+:root {
+  /* Background Colors */
+  --bg-primary: #0a0a1a;
+  --bg-secondary: #12121f;
+  --bg-tertiary: #1a1a2e;
+  --bg-elevated: #252540;
+  
+  /* Surface Colors */
+  --surface-primary: #1e293b;
+  --surface-secondary: #334155;
+  --surface-tertiary: #475569;
+  
+  /* Border Colors */
+  --border-primary: #2a2a42;
+  --border-secondary: #3d3d5c;
+  --border-accent: rgba(99, 102, 241, 0.3);
+  
+  /* Text Colors */
+  --text-primary: #ffffff;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #64748b;
+  --text-muted: #475569;
+  --text-inverse: #0f172a;
+  
+  /* Icon Colors */
+  --icon-primary: #ffffff;
+  --icon-secondary: #94a3b8;
+  --icon-muted: #64748b;
+  
+  /* Shadow Colors */
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --shadow-glow-color: rgba(99, 102, 241, 0.4);
+  
+  /* Overlay Colors */
+  --overlay-color: rgba(0, 0, 0, 0.7);
+  --backdrop-color: rgba(10, 10, 26, 0.8);
+  
+  /* Canvas Colors */
+  --canvas-bg: #1a1a2e;
+  --canvas-grid-primary: rgba(255, 255, 255, 0.1);
+  --canvas-grid-secondary: rgba(255, 255, 255, 0.05);
+  
+  /* Selection Colors */
+  --selection-bg: rgba(99, 102, 241, 0.2);
+  --selection-border: rgba(99, 102, 241, 0.5);
+  
+  /* Hover Colors */
+  --hover-primary: rgba(255, 255, 255, 0.05);
+  --hover-secondary: rgba(99, 102, 241, 0.1);
+  --hover-accent: rgba(99, 102, 241, 0.15);
+  
+  /* Active Colors */
+  --active-primary: rgba(99, 102, 241, 0.2);
+  --active-secondary: rgba(139, 92, 246, 0.2);
+  
+  /* Focus Colors */
+  --focus-ring: rgba(99, 102, 241, 0.5);
+  --focus-ring-offset: #0a0a1a;
+}
+
+/* Dark theme specific component overrides */
+.dark {
+  /* Scrollbar */
+  --scrollbar-track: rgba(0, 0, 0, 0.2);
+  --scrollbar-thumb: rgba(99, 102, 241, 0.4);
+  --scrollbar-thumb-hover: rgba(99, 102, 241, 0.6);
+  
+  /* Skeleton loading */
+  --skeleton-base: rgba(255, 255, 255, 0.05);
+  --skeleton-highlight: rgba(255, 255, 255, 0.1);
+}
+
+/* Dark theme animations */
+@keyframes dark-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes dark-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(99, 102, 241, 0.6);
+  }
+}
+
+/* Dark theme utility classes */
+.dark .theme-bg-primary {
+  background-color: var(--bg-primary);
+}
+
+.dark .theme-bg-secondary {
+  background-color: var(--bg-secondary);
+}
+
+.dark .theme-text-primary {
+  color: var(--text-primary);
+}
+
+.dark .theme-text-secondary {
+  color: var(--text-secondary);
+}
+
+.dark .theme-border-primary {
+  border-color: var(--border-primary);
+}
+
+.dark .theme-glow {
+  box-shadow: var(--shadow-glow-color);
+}

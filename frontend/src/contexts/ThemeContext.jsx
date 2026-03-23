@@ -3,97 +3,61 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const ThemeContext = createContext();
 
-export const themes = {
-  dark: {
-    name: 'dark',
-    colors: {
-      primary: '#6366f1',
-      secondary: '#8b5cf6',
-      background: '#0a0a1a',
-      surface: '#12121f',
-      card: '#1a1a2e',
-      border: '#2a2a42',
-      text: '#f1f5f9',
-      textMuted: '#94a3b8'
-    }
-  },
-  light: {
-    name: 'light',
-    colors: {
-      primary: '#4f46e5',
-      secondary: '#7c3aed',
-      background: '#f8fafc',
-      surface: '#ffffff',
-      card: '#f1f5f9',
-      border: '#e2e8f0',
-      text: '#0f172a',
-      textMuted: '#64748b'
-    }
-  },
-  midnight: {
-    name: 'midnight',
-    colors: {
-      primary: '#06b6d4',
-      secondary: '#14b8a6',
-      background: '#020617',
-      surface: '#0f172a',
-      card: '#1e293b',
-      border: '#334155',
-      text: '#f8fafc',
-      textMuted: '#94a3b8'
-    }
-  },
-  sunset: {
-    name: 'sunset',
-    colors: {
-      primary: '#f97316',
-      secondary: '#f59e0b',
-      background: '#0c0a09',
-      surface: '#1c1917',
-      card: '#292524',
-      border: '#44403c',
-      text: '#fafaf9',
-      textMuted: '#a8a29e'
-    }
-  }
-};
-
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
+    // Check localStorage first
     const saved = localStorage.getItem('theme');
-    return saved && themes[saved] ? saved : 'dark';
+    if (saved) return saved;
+    
+    // Check system preference
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    return 'light';
   });
 
-  const [accentColor, setAccentColor] = useState(() => {
-    return localStorage.getItem('accentColor') || '#6366f1';
-  });
+  const [isDark, setIsDark] = useState(true);
 
+  // Apply theme class to document
   useEffect(() => {
-    localStorage.setItem('theme', theme);
-    document.documentElement.className = theme;
-    
-    // Apply theme colors as CSS variables
     const root = document.documentElement;
-    const currentTheme = themes[theme];
     
-    Object.entries(currentTheme.colors).forEach(([key, value]) => {
-      root.style.setProperty(`--color-${key}`, value);
-    });
+    root.classList.remove('light', 'dark');
+    
+    if (theme === 'system') {
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      root.classList.add(systemDark ? 'dark' : 'light');
+      setIsDark(systemDark);
+    } else {
+      root.classList.add(theme);
+      setIsDark(theme === 'dark');
+    }
+    
+    localStorage.setItem('theme', theme);
   }, [theme]);
 
+  // Listen for system theme changes
   useEffect(() => {
-    localStorage.setItem('accentColor', accentColor);
-    document.documentElement.style.setProperty('--accent-color', accentColor);
-  }, [accentColor]);
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const handleChange = (e) => {
+      if (theme === 'system') {
+        const root = document.documentElement;
+        root.classList.remove('light', 'dark');
+        root.classList.add(e.matches ? 'dark' : 'light');
+        setIsDark(e.matches);
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [theme]);
 
   const value = {
     theme,
     setTheme,
-    themes,
-    currentTheme: themes[theme],
-    accentColor,
-    setAccentColor,
-    isDark: theme !== 'light'
+    isDark,
+    toggle: () => setTheme(prev => prev === 'dark' ? 'light' : 'dark')
   };
 
   return (

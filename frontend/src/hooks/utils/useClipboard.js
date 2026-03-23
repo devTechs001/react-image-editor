@@ -1,108 +1,221 @@
 // frontend/src/hooks/utils/useClipboard.js
 import { useState, useCallback, useEffect } from 'react';
 
-export function useClipboard(timeout = 2000) {
-  const [isCopied, setIsCopied] = useState(false);
-  const [error, setError] = useState(null);
+/**
+ * Hook for clipboard operations
+ * @param {Object} options
+ */
+export function useClipboard(options = {}) {
+  const {
+    timeout = 2000,
+    onCopy,
+    onError,
+    autoReset = true
+  } = options;
 
+  const [copiedText, setCopiedText] = useState(null);
+  const [isCopying, setIsCopying] = useState(false);
+  const [error, setError] = useState(null);
+  const [history, setHistory] = useState([]);
+
+  // Check clipboard API support
+  const isSupported = typeof navigator !== 'undefined' && navigator.clipboard;
+
+  // Copy text to clipboard
   const copy = useCallback(async (text) => {
+    if (!text) {
+      setError('No text provided');
+      return false;
+    }
+
+    setIsCopying(true);
+    setError(null);
+
     try {
-      if (navigator.clipboard && window.isSecureContext) {
+      if (isSupported) {
         await navigator.clipboard.writeText(text);
       } else {
         // Fallback for older browsers
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        
+        try {
+          document.execCommand('copy');
+        } catch (err) {
+          throw new Error('Failed to copy text');
+        }
+        
+        document.body.removeChild(textarea);
       }
-      
-      setIsCopied(true);
-      setError(null);
-      
-      setTimeout(() => setIsCopied(false), timeout);
+
+      setCopiedText(text);
+      setHistory(prev => [...prev.slice(-9), { text, timestamp: Date.now() }]);
+      onCopy?.(text);
+
+      if (autoReset) {
+        setTimeout(() => {
+          setCopiedText(null);
+        }, timeout);
+      }
+
       return true;
     } catch (err) {
-      setError(err.message);
-      setIsCopied(false);
+      const errorMessage = err.message || 'Failed to copy';
+      setError(errorMessage);
+      onError?.(err);
       return false;
+    } finally {
+      setIsCopying(false);
     }
-  }, [timeout]);
+  }, [isSupported, timeout, autoReset, onCopy, onError]);
 
-  const copyImage = useCallback(async (imageUrl) => {
-    try {
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.write([
-          new ClipboardItem({
-            [blob.type]: blob
-          })
-        ]);
-        setIsCopied(true);
-        setError(null);
-        setTimeout(() => setIsCopied(false), timeout);
-        return true;
-      } else {
-        setError('Clipboard API not available');
-        return false;
-      }
-    } catch (err) {
-      setError(err.message);
-      return false;
-    }
-  }, [timeout]);
-
+  // Read text from clipboard
   const paste = useCallback(async () => {
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        return await navigator.clipboard.readText();
-      } else {
-        setError('Clipboard API not available');
-        return null;
-      }
-    } catch (err) {
-      setError(err.message);
-      return null;
-    }
-  }, []);
-
-  const pasteImage = useCallback(async () => {
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        const clipboardItems = await navigator.clipboard.read();
-        for (const item of clipboardItems) {
-          if (item.types.find(type => type.startsWith('image/'))) {
-            const blob = await item.getType(item.types.find(type => type.startsWith('image/')));
-            return URL.createObjectURL(blob);
-          }
-        }
-      }
-      setError('Clipboard API not available');
-      return null;
-    } catch (err) {
-      setError(err.message);
-      return null;
-    }
-  }, []);
-
-  const clearError = useCallback(() => {
     setError(null);
+
+    try {
+      if (isSupported) {
+        const text = await navigator.clipboard.readText();
+        return text;
+      } else {
+        throw new Error('Clipboard API not supported');
+      }
+    } catch (err) {
+      const errorMessage = err.message || 'Failed to paste';
+      setError(errorMessage);
+      throw err;
+    }
+  }, [isSupported]);
+
+  // Clear clipboard history
+  const clearHistory = useCallback(() => {
+    setHistory([]);
+  }, []);
+
+  // Get item from history
+  const getFromHistory = useCallback((index) => {
+    return history[history.length - 1 - index] || null;
+  }, [history]);
+
+  return {
+    copiedText,
+    isCopying,
+    error,
+    history,
+    copy,
+    paste,
+    clearHistory,
+    getFromHistory,
+    isSupported
+  };
+}
+
+/**
+ * Hook for copying image to clipboard
+ */
+export function useClipboardImage() {
+  const [isCopying, setIsCopying] = useState(false);
+  const [error, setError] = useState(null);
+
+  const copyImage = useCallback(async (canvasOrBlob) => {
+    setIsCopying(true);
+    setError(null);
+
+    try {
+      let blob;
+      
+      if (canvasOrBlob instanceof HTMLCanvasElement) {
+        blob = await new Promise(resolve => canvasOrBlob.toBlob(resolve, 'image/png'));
+      } else if (canvasOrBlob instanceof Blob) {
+        blob = canvasOrBlob;
+      } else {
+        throw new Error('Invalid input: expected Canvas or Blob');
+      }
+
+      const item = new ClipboardItem({ [blob.type]: blob });
+      await navigator.clipboard.write([item]);
+
+      return true;
+    } catch (err) {
+      setError(err.message || 'Failed to copy image');
+      return false;
+    } finally {
+      setIsCopying(false);
+    }
   }, []);
 
   return {
-    isCopied,
+    isCopying,
     error,
-    copy,
-    copyImage,
-    paste,
-    pasteImage,
-    clearError
+    copyImage
+  };
+}
+
+/**
+ * Hook for clipboard event listeners
+ */
+export function useClipboardEvents(options = {}) {
+  const {
+    onPaste,
+    onCut,
+    onCopy
+  } = options;
+
+  useEffect(() => {
+    const handlePaste = async (e) => {
+      if (onPaste) {
+        e.preventDefault();
+        const items = e.clipboardData?.items;
+        
+        if (items) {
+          for (const item of items) {
+            if (item.type.startsWith('image/')) {
+              const blob = item.getAsFile();
+              onPaste({ type: 'image', blob });
+              return;
+            } else if (item.type === 'text/plain') {
+              item.getAsString((text) => {
+                onPaste({ type: 'text', text });
+              });
+              return;
+            }
+          }
+        }
+      }
+    };
+
+    const handleCut = (e) => {
+      onCut?.(e);
+    };
+
+    const handleCopy = (e) => {
+      onCopy?.(e);
+    };
+
+    window.addEventListener('paste', handlePaste);
+    window.addEventListener('cut', handleCut);
+    window.addEventListener('copy', handleCopy);
+
+    return () => {
+      window.removeEventListener('paste', handlePaste);
+      window.removeEventListener('cut', handleCut);
+      window.removeEventListener('copy', handleCopy);
+    };
+  }, [onPaste, onCut, onCopy]);
+}
+
+/**
+ * HOC for adding clipboard functionality to components
+ */
+export function withClipboard(WrappedComponent) {
+  return function ClipboardWrappedComponent(props) {
+    const clipboard = useClipboard();
+    return <WrappedComponent {...props} clipboard={clipboard} />;
   };
 }
 

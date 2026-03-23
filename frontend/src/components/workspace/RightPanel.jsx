@@ -7,9 +7,8 @@ import {
   Sparkles,
   Palette,
   History,
-  Settings,
   ChevronLeft,
-  ChevronRight
+  X
 } from 'lucide-react';
 import { useEditor } from '@/contexts/EditorContext';
 import LayersPanel from '@/components/layers/LayersPanel';
@@ -18,19 +17,23 @@ import FilterPanel from '@/components/filters/FilterPanel';
 import AIHub from '@/components/ai/AIHub';
 import HistoryPanel from './HistoryPanel';
 import { cn } from '@/utils/helpers/cn';
+import Button from '@/components/ui/Button';
 
 const tabs = [
   { id: 'layers', icon: Layers, label: 'Layers' },
   { id: 'adjustments', icon: Sliders, label: 'Adjust' },
   { id: 'filters', icon: Palette, label: 'Filters' },
-  { id: 'ai', icon: Sparkles, label: 'AI Tools' },
+  { id: 'ai', icon: Sparkles, label: 'AI' },
   { id: 'history', icon: History, label: 'History' }
 ];
 
 export default function RightPanel({ className }) {
-  const { ui, setActiveTab, toggleRightPanel } = useEditor();
+  const { ui, activeTab, setActiveTab } = useEditor();
   const [width, setWidth] = useState(320);
   const [isResizing, setIsResizing] = useState(false);
+
+  // Safe access to ui state
+  const rightPanelOpen = ui?.rightPanelOpen ?? true;
 
   const handleMouseDown = (e) => {
     setIsResizing(true);
@@ -60,7 +63,7 @@ export default function RightPanel({ className }) {
   }, [isResizing]);
 
   const renderContent = () => {
-    switch (ui.activeTab) {
+    switch (activeTab) {
       case 'layers':
         return <LayersPanel />;
       case 'adjustments':
@@ -77,98 +80,86 @@ export default function RightPanel({ className }) {
   };
 
   return (
-    <div
-      className={cn(
-        'relative flex bg-editor-surface border-l border-editor-border',
-        className
-      )}
-      style={{ width: ui.rightPanelOpen ? width : 0 }}
-    >
-      {/* Resize Handle */}
-      <div
-        onMouseDown={handleMouseDown}
-        className={cn(
-          'absolute left-0 top-0 bottom-0 w-1 cursor-ew-resize z-10',
-          'hover:bg-primary-500/50 transition-colors',
-          isResizing && 'bg-primary-500'
-        )}
-      />
-
-      {/* Toggle Button */}
-      <button
-        onClick={toggleRightPanel}
-        className={cn(
-          'absolute -left-4 top-1/2 -translate-y-1/2 z-20',
-          'w-4 h-8 flex items-center justify-center',
-          'bg-editor-card border border-editor-border rounded-l-lg',
-          'text-surface-400 hover:text-white hover:bg-editor-hover',
-          'transition-all'
-        )}
-      >
-        {ui.rightPanelOpen ? (
-          <ChevronRight className="w-3 h-3" />
-        ) : (
-          <ChevronLeft className="w-3 h-3" />
-        )}
-      </button>
-
-      <AnimatePresence mode="wait">
-        {ui.rightPanelOpen && (
+    <>
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {rightPanelOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col w-full"
-          >
-            {/* Tabs */}
-            <div className="flex items-center border-b border-editor-border">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = ui.activeTab === tab.id;
-
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={cn(
-                      'flex-1 flex flex-col items-center gap-1 py-3 transition-all relative',
-                      isActive
-                        ? 'text-primary-400'
-                        : 'text-surface-400 hover:text-white'
-                    )}
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span className="text-2xs font-medium">{tab.label}</span>
-                    
-                    {isActive && (
-                      <motion.div
-                        layoutId="activeTab"
-                        className="absolute bottom-0 left-2 right-2 h-0.5 bg-primary-500 rounded-full"
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 overflow-hidden">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={ui.activeTab}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="h-full"
-                >
-                  {renderContent()}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </motion.div>
+            className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            onClick={() => {}}
+          />
         )}
       </AnimatePresence>
-    </div>
+
+      {/* Panel */}
+      <motion.div
+        initial={false}
+        animate={{
+          x: rightPanelOpen ? 0 : '100%',
+          width: rightPanelOpen ? (typeof window !== 'undefined' && window.innerWidth >= 768 ? width : '100%') : 0
+        }}
+        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+        className={cn(
+          'fixed right-0 top-0 bottom-0',
+          'bg-editor-surface border-l border-editor-border',
+          'z-50 overflow-hidden',
+          'flex flex-col',
+          'md:relative md:z-auto',
+          className
+        )}
+      >
+        {/* Mobile Header */}
+        <div className="md:hidden flex items-center justify-between p-3 border-b border-editor-border bg-editor-surface">
+          <h3 className="text-sm font-semibold text-white">
+            {tabs.find(t => t.id === activeTab)?.label || 'Panel'}
+          </h3>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => {}}
+            className="text-surface-400"
+          >
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
+
+        {/* Desktop Resize Handle */}
+        <div
+          onMouseDown={handleMouseDown}
+          className="hidden md:block absolute left-0 top-0 bottom-0 w-1 cursor-ew-resize z-10 hover:bg-primary-500/50 transition-colors"
+        />
+
+        {/* Tab Navigation - Mobile: Horizontal scroll, Desktop: Vertical */}
+        <div className="md:hidden flex overflow-x-auto scrollbar-hide border-b border-editor-border bg-editor-surface">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  'flex-shrink-0 flex flex-col items-center gap-1 px-4 py-3',
+                  'border-b-2 transition-colors',
+                  activeTab === tab.id
+                    ? 'border-primary-500 text-primary-400'
+                    : 'border-transparent text-surface-400'
+                )}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-[10px] font-medium">{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-dark">
+          {renderContent()}
+        </div>
+      </motion.div>
+    </>
   );
 }

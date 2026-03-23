@@ -1,0 +1,162 @@
+/* frontend/src/styles/themes/light.css */
+/* Light Theme */
+
+.light {
+  /* Background Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --bg-elevated: #e2e8f0;
+  
+  /* Surface Colors */
+  --surface-primary: #ffffff;
+  --surface-secondary: #f8fafc;
+  --surface-tertiary: #f1f5f9;
+  
+  /* Border Colors */
+  --border-primary: #e2e8f0;
+  --border-secondary: #cbd5e1;
+  --border-accent: rgba(99, 102, 241, 0.3);
+  
+  /* Text Colors */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
+  --text-muted: #94a3b8;
+  --text-inverse: #ffffff;
+  
+  /* Icon Colors */
+  --icon-primary: #0f172a;
+  --icon-secondary: #475569;
+  --icon-muted: #94a3b8;
+  
+  /* Shadow Colors */
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --shadow-glow-color: rgba(99, 102, 241, 0.3);
+  
+  /* Overlay Colors */
+  --overlay-color: rgba(0, 0, 0, 0.5);
+  --backdrop-color: rgba(255, 255, 255, 0.8);
+  
+  /* Canvas Colors */
+  --canvas-bg: #ffffff;
+  --canvas-grid-primary: rgba(0, 0, 0, 0.1);
+  --canvas-grid-secondary: rgba(0, 0, 0, 0.05);
+  
+  /* Selection Colors */
+  --selection-bg: rgba(99, 102, 241, 0.15);
+  --selection-border: rgba(99, 102, 241, 0.4);
+  
+  /* Hover Colors */
+  --hover-primary: rgba(0, 0, 0, 0.03);
+  --hover-secondary: rgba(99, 102, 241, 0.08);
+  --hover-accent: rgba(99, 102, 241, 0.1);
+  
+  /* Active Colors */
+  --active-primary: rgba(99, 102, 241, 0.15);
+  --active-secondary: rgba(139, 92, 246, 0.15);
+  
+  /* Focus Colors */
+  --focus-ring: rgba(99, 102, 241, 0.4);
+  --focus-ring-offset: #ffffff;
+  
+  /* Scrollbar */
+  --scrollbar-track: rgba(0, 0, 0, 0.05);
+  --scrollbar-thumb: rgba(99, 102, 241, 0.3);
+  --scrollbar-thumb-hover: rgba(99, 102, 241, 0.5);
+  
+  /* Skeleton loading */
+  --skeleton-base: rgba(0, 0, 0, 0.05);
+  --skeleton-highlight: rgba(0, 0, 0, 0.1);
+}
+
+/* Light theme specific component overrides */
+.light .card {
+  @apply bg-white border-surface-200;
+  @apply shadow-lg;
+}
+
+.light .card-glass {
+  @apply bg-white/80 backdrop-blur-xl;
+  @apply border border-white/20;
+  @apply shadow-glow;
+}
+
+.light .input {
+  @apply bg-white border-surface-300;
+  @apply text-surface-900 placeholder-surface-400;
+}
+
+.light .btn-ghost {
+  @apply text-surface-600;
+  @apply hover:bg-surface-100 hover:text-surface-900;
+}
+
+/* Light theme animations */
+@keyframes light-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes light-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(99, 102, 241, 0.4);
+  }
+}
+
+/* Light theme utility classes */
+.light .theme-bg-primary {
+  background-color: var(--bg-primary);
+}
+
+.light .theme-bg-secondary {
+  background-color: var(--bg-secondary);
+}
+
+.light .theme-text-primary {
+  color: var(--text-primary);
+}
+
+.light .theme-text-secondary {
+  color: var(--text-secondary);
+}
+
+.light .theme-border-primary {
+  border-color: var(--border-primary);
+}
+
+.light .theme-glow {
+  box-shadow: var(--shadow-glow-color);
+}
+
+/* Light theme specific adjustments */
+.light .divider {
+  @apply bg-surface-200;
+}
+
+.light .badge-primary {
+  @apply bg-primary-100 text-primary-700;
+  @apply border border-primary-200;
+}
+
+.light .badge-success {
+  @apply bg-emerald-100 text-emerald-700;
+  @apply border border-emerald-200;
+}
+
+.light .badge-warning {
+  @apply bg-amber-100 text-amber-700;
+  @apply border border-amber-200;
+}
+
+.light .badge-danger {
+  @apply bg-red-100 text-red-700;
+  @apply border border-red-200;
+}

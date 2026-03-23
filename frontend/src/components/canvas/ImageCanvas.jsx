@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { fabric } from 'fabric';
-import { useEditorContext } from '@contexts/EditorContext';
+import { useEditor } from '@/contexts/EditorContext';
 import CanvasControls from './CanvasControls';
 
 const ImageCanvas = ({ width = 800, height = 600 }) => {

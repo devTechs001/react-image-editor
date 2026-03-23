@@ -1,0 +1,819 @@
+/* frontend/src/styles/desktop.css */
+/* ============================================
+   Desktop Responsive Styles
+   Breakpoint: > 1024px
+   ============================================ */
+
+@media (min-width: 1025px) {
+  /* Typography Adjustments */
+  :root {
+    --text-xs: 0.75rem;
+    --text-sm: 0.8125rem;
+    --text-base: 0.875rem;
+    --text-lg: 1rem;
+    --text-xl: 1.125rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 1.875rem;
+    --text-4xl: 2.25rem;
+  }
+
+  /* Layout */
+  .container {
+    @apply px-8;
+    @apply max-w-7xl mx-auto;
+  }
+
+  .page-padding {
+    @apply px-8 py-8;
+  }
+
+  /* Desktop Grid System */
+  .desktop-grid {
+    @apply grid gap-6;
+  }
+
+  .desktop-grid-2 {
+    @apply grid grid-cols-2 gap-6;
+  }
+
+  .desktop-grid-3 {
+    @apply grid grid-cols-3 gap-6;
+  }
+
+  .desktop-grid-4 {
+    @apply grid grid-cols-4 gap-6;
+  }
+
+  .desktop-grid-5 {
+    @apply grid grid-cols-5 gap-6;
+  }
+
+  .desktop-grid-6 {
+    @apply grid grid-cols-6 gap-6;
+  }
+
+  /* Desktop App Layout */
+  .app-layout {
+    @apply flex h-screen;
+    @apply bg-editor-bg;
+    @apply overflow-hidden;
+  }
+
+  /* Desktop Sidebar */
+  .desktop-sidebar {
+    @apply w-72;
+    @apply flex-shrink-0;
+    @apply bg-editor-surface;
+    @apply border-r border-editor-border;
+    @apply flex flex-col;
+    @apply overflow-hidden;
+  }
+
+  .desktop-sidebar-header {
+    @apply p-6;
+    @apply border-b border-editor-border;
+  }
+
+  .desktop-sidebar-logo {
+    @apply flex items-center gap-3;
+    @apply mb-6;
+  }
+
+  .desktop-sidebar-logo-icon {
+    @apply w-10 h-10;
+    @apply rounded-xl;
+    @apply bg-gradient-to-br from-primary-500 to-secondary-500;
+    @apply flex items-center justify-center;
+  }
+
+  .desktop-sidebar-logo-text {
+    @apply text-lg font-bold;
+    @apply text-white;
+  }
+
+  .desktop-sidebar-nav {
+    @apply flex-1;
+    @apply overflow-y-auto;
+    @apply py-4;
+  }
+
+  .desktop-sidebar-nav-item {
+    @apply flex items-center gap-3;
+    @apply px-4 py-3;
+    @apply mx-2;
+    @apply rounded-xl;
+    @apply text-surface-300;
+    @apply hover:bg-hover hover:text-white;
+    @apply transition-all;
+    @apply cursor-pointer;
+  }
+
+  .desktop-sidebar-nav-item.active {
+    @apply bg-primary-500/10 text-primary-400;
+    @apply border border-primary-500/20;
+  }
+
+  .desktop-sidebar-nav-item-icon {
+    @apply w-5 h-5;
+  }
+
+  .desktop-sidebar-nav-item-label {
+    @apply text-sm font-medium;
+  }
+
+  .desktop-sidebar-footer {
+    @apply p-4;
+    @apply border-t border-editor-border;
+  }
+
+  /* Desktop Main Content */
+  .desktop-main {
+    @apply flex-1;
+    @apply flex flex-col;
+    @apply overflow-hidden;
+  }
+
+  /* Desktop Header */
+  .desktop-header {
+    @apply h-16;
+    @apply flex-shrink-0;
+    @apply bg-editor-surface/80 backdrop-blur-xl;
+    @apply border-b border-editor-border;
+    @apply flex items-center justify-between;
+    @apply px-6;
+  }
+
+  .desktop-header-left {
+    @apply flex items-center gap-4;
+  }
+
+  .desktop-header-title {
+    @apply text-lg font-semibold;
+    @apply text-white;
+  }
+
+  .desktop-header-breadcrumb {
+    @apply flex items-center gap-2;
+    @apply text-sm text-surface-400;
+  }
+
+  .desktop-header-right {
+    @apply flex items-center gap-3;
+  }
+
+  /* Desktop Toolbar */
+  .desktop-toolbar {
+    @apply h-12;
+    @apply flex-shrink-0;
+    @apply bg-editor-surface/50;
+    @apply border-b border-editor-border;
+    @apply flex items-center;
+    @apply px-4;
+    @apply gap-2;
+  }
+
+  .desktop-toolbar-section {
+    @apply flex items-center gap-1;
+    @apply pr-4;
+    @apply border-r border-editor-border;
+  }
+
+  .desktop-toolbar-section:last-child {
+    @apply border-r-0;
+  }
+
+  .desktop-toolbar-button {
+    @apply p-2;
+    @apply rounded-lg;
+    @apply text-surface-400;
+    @apply hover:bg-hover hover:text-white;
+    @apply transition-colors;
+  }
+
+  .desktop-toolbar-button.active {
+    @apply bg-primary-500/20 text-primary-400;
+  }
+
+  .desktop-toolbar-divider {
+    @apply w-px h-6;
+    @apply bg-editor-border;
+    @apply mx-2;
+  }
+
+  /* Desktop Canvas Area */
+  .desktop-canvas-area {
+    @apply flex-1;
+    @apply flex;
+    @apply overflow-hidden;
+  }
+
+  .desktop-canvas-wrapper {
+    @apply flex-1;
+    @apply flex items-center justify-center;
+    @apply bg-editor-bg;
+    @apply overflow-auto;
+    @apply p-8;
+  }
+
+  .desktop-canvas-container {
+    @apply rounded-2xl;
+    @apply overflow-hidden;
+    @apply shadow-glow-lg;
+    @apply bg-editor-card;
+  }
+
+  .desktop-canvas {
+    @apply max-w-full;
+    @apply max-h-full;
+  }
+
+  /* Desktop Right Panel */
+  .desktop-right-panel {
+    @apply w-80;
+    @apply flex-shrink-0;
+    @apply bg-editor-surface;
+    @apply border-l border-editor-border;
+    @apply flex flex-col;
+    @apply overflow-hidden;
+  }
+
+  .desktop-right-panel-header {
+    @apply h-12;
+    @apply flex items-center justify-between;
+    @apply px-4;
+    @apply border-b border-editor-border;
+  }
+
+  .desktop-right-panel-title {
+    @apply text-sm font-semibold;
+    @apply text-white;
+  }
+
+  .desktop-right-panel-actions {
+    @apply flex items-center gap-2;
+  }
+
+  .desktop-right-panel-content {
+    @apply flex-1;
+    @apply overflow-y-auto;
+    @apply p-4;
+  }
+
+  /* Desktop Bottom Panel */
+  .desktop-bottom-panel {
+    @apply h-48;
+    @apply flex-shrink-0;
+    @apply bg-editor-surface;
+    @apply border-t border-editor-border;
+    @apply flex flex-col;
+    @apply overflow-hidden;
+  }
+
+  .desktop-bottom-panel-header {
+    @apply h-10;
+    @apply flex items-center justify-between;
+    @apply px-4;
+    @apply border-b border-editor-border;
+  }
+
+  .desktop-bottom-panel-tabs {
+    @apply flex;
+  }
+
+  .desktop-bottom-panel-tab {
+    @apply px-3 py-2;
+    @apply text-xs font-medium;
+    @apply text-surface-400;
+    @apply hover:text-white;
+    @apply transition-colors;
+  }
+
+  .desktop-bottom-panel-tab.active {
+    @apply text-primary-400;
+    @apply border-b-2 border-primary-500;
+  }
+
+  .desktop-bottom-panel-content {
+    @apply flex-1;
+    @apply overflow-hidden;
+    @apply p-4;
+  }
+
+  /* Desktop Cards */
+  .desktop-card {
+    @apply rounded-2xl;
+    @apply p-6;
+    @apply bg-editor-card;
+    @apply border border-editor-border;
+    @apply shadow-card;
+    @apply hover:shadow-glow;
+    @apply transition-shadow;
+  }
+
+  .desktop-card-header {
+    @apply flex items-center justify-between;
+    @apply mb-4;
+  }
+
+  .desktop-card-title {
+    @apply text-base font-semibold;
+    @apply text-white;
+  }
+
+  .desktop-card-subtitle {
+    @apply text-sm;
+    @apply text-surface-400;
+  }
+
+  /* Desktop Buttons */
+  .desktop-btn {
+    @apply px-5 py-3;
+    @apply text-sm;
+    @apply rounded-xl;
+    @apply font-medium;
+  }
+
+  .desktop-btn-icon {
+    @apply p-3;
+    @apply rounded-xl;
+  }
+
+  .desktop-btn-lg {
+    @apply px-6 py-3.5;
+    @apply text-base;
+    @apply rounded-2xl;
+  }
+
+  /* Desktop Inputs */
+  .desktop-input {
+    @apply px-4 py-3;
+    @apply text-sm;
+    @apply rounded-xl;
+  }
+
+  .desktop-input-lg {
+    @apply px-5 py-3.5;
+    @apply text-base;
+    @apply rounded-2xl;
+  }
+
+  /* Desktop Tables */
+  .desktop-table {
+    @apply w-full;
+    @apply border-collapse;
+  }
+
+  .desktop-table-header {
+    @apply bg-surface-800;
+  }
+
+  .desktop-table-header-cell {
+    @apply px-4 py-3;
+    @apply text-xs font-semibold;
+    @apply text-surface-400;
+    @apply text-left;
+    @apply border-b border-editor-border;
+  }
+
+  .desktop-table-row {
+    @apply border-b border-editor-border;
+    @apply hover:bg-hover;
+    @apply transition-colors;
+  }
+
+  .desktop-table-cell {
+    @apply px-4 py-3;
+    @apply text-sm;
+    @apply text-surface-300;
+  }
+
+  /* Desktop Modal */
+  .desktop-modal {
+    @apply fixed inset-0;
+    @apply z-50;
+    @apply flex items-center justify-center;
+    @apply p-8;
+  }
+
+  .desktop-modal-content {
+    @apply w-full max-w-2xl;
+    @apply max-h-[85vh];
+    @apply bg-editor-surface;
+    @apply rounded-3xl;
+    @apply overflow-hidden;
+    @apply shadow-elevated;
+    @apply border border-editor-border;
+  }
+
+  .desktop-modal-lg {
+    @apply max-w-4xl;
+  }
+
+  .desktop-modal-sm {
+    @apply max-w-md;
+  }
+
+  .desktop-modal-header {
+    @apply flex items-center justify-between;
+    @apply p-6;
+    @apply border-b border-editor-border;
+  }
+
+  .desktop-modal-title {
+    @apply text-lg font-semibold;
+    @apply text-white;
+  }
+
+  .desktop-modal-body {
+    @apply p-6;
+    @apply overflow-y-auto;
+  }
+
+  .desktop-modal-footer {
+    @apply flex items-center justify-end;
+    @apply gap-3;
+    @apply p-6;
+    @apply border-t border-editor-border;
+    @apply bg-surface-800/50;
+  }
+
+  .desktop-modal-overlay {
+    @apply absolute inset-0;
+    @apply bg-black/60;
+    @apply backdrop-blur-sm;
+  }
+
+  /* Desktop Drawer */
+  .desktop-drawer {
+    @apply fixed inset-y-0 right-0;
+    @apply w-[480px];
+    @apply bg-editor-surface;
+    @apply z-50;
+    @apply shadow-elevated;
+    @apply border-l border-editor-border;
+  }
+
+  .desktop-drawer-lg {
+    @apply w-[640px];
+  }
+
+  /* Desktop Toast */
+  .desktop-toast {
+    @apply fixed;
+    @apply top-6 right-6;
+    @apply z-50;
+    @apply w-[400px];
+  }
+
+  .desktop-toast-item {
+    @apply rounded-2xl;
+    @apply p-4;
+    @apply shadow-elevated;
+    @apply mb-3;
+    @apply border border-editor-border;
+  }
+
+  /* Desktop Tooltip */
+  .desktop-tooltip {
+    @apply absolute;
+    @apply px-3 py-1.5;
+    @apply text-xs;
+    @apply bg-surface-900;
+    @apply text-white;
+    @apply rounded-lg;
+    @apply shadow-elevated;
+    @apply border border-surface-700;
+    @apply whitespace-nowrap;
+    @apply z-50;
+  }
+
+  /* Desktop Popover */
+  .desktop-popover {
+    @apply absolute;
+    @apply p-4;
+    @apply bg-editor-surface;
+    @apply rounded-2xl;
+    @apply shadow-elevated;
+    @apply border border-editor-border;
+    @apply z-50;
+    @apply min-w-[240px];
+  }
+
+  /* Desktop Context Menu */
+  .desktop-context-menu {
+    @apply absolute;
+    @apply py-2;
+    @apply bg-editor-surface;
+    @apply rounded-xl;
+    @apply shadow-elevated;
+    @apply border border-editor-border;
+    @apply z-50;
+    @apply min-w-[200px];
+  }
+
+  .desktop-context-menu-item {
+    @apply flex items-center gap-3;
+    @apply px-4 py-2.5;
+    @apply text-sm;
+    @apply text-surface-300;
+    @apply hover:bg-hover hover:text-white;
+    @apply cursor-pointer;
+    @apply transition-colors;
+  }
+
+  .desktop-context-menu-divider {
+    @apply my-2;
+    @apply h-px;
+    @apply bg-editor-border;
+  }
+
+  /* Desktop Dropdown */
+  .desktop-dropdown {
+    @apply relative;
+    @apply inline-block;
+  }
+
+  .desktop-dropdown-menu {
+    @apply absolute;
+    @apply mt-2;
+    @apply py-2;
+    @apply bg-editor-surface;
+    @apply rounded-xl;
+    @apply shadow-elevated;
+    @apply border border-editor-border;
+    @apply z-50;
+    @apply min-w-[180px];
+  }
+
+  /* Desktop Slider */
+  .desktop-slider {
+    @apply h-12;
+  }
+
+  .desktop-slider-track {
+    @apply h-1;
+    @apply rounded-full;
+  }
+
+  .desktop-slider-thumb {
+    @apply w-4 h-4;
+    @apply rounded-full;
+    @apply shadow-lg;
+  }
+
+  .desktop-slider:hover .desktop-slider-thumb {
+    @apply w-5 h-5;
+  }
+
+  /* Desktop Progress */
+  .desktop-progress {
+    @apply h-2;
+    @apply rounded-full;
+    @apply overflow-hidden;
+    @apply bg-surface-800;
+  }
+
+  .desktop-progress-bar {
+    @apply h-full;
+    @apply bg-gradient-to-r from-primary-500 to-secondary-500;
+    @apply rounded-full;
+    @apply transition-all duration-300;
+  }
+
+  /* Desktop Avatar */
+  .desktop-avatar {
+    @apply w-10 h-10;
+    @apply rounded-full;
+  }
+
+  .desktop-avatar-lg {
+    @apply w-16 h-16;
+  }
+
+  .desktop-avatar-xl {
+    @apply w-24 h-24;
+  }
+
+  /* Desktop Stats Grid */
+  .desktop-stats-grid {
+    @apply grid grid-cols-4 gap-6;
+  }
+
+  .desktop-stat-card {
+    @apply p-5;
+    @apply rounded-2xl;
+    @apply bg-surface-800;
+    @apply border border-surface-700;
+  }
+
+  .desktop-stat-value {
+    @apply text-3xl font-bold;
+    @apply text-white;
+    @apply mb-1;
+  }
+
+  .desktop-stat-label {
+    @apply text-sm;
+    @apply text-surface-400;
+  }
+
+  .desktop-stat-change {
+    @apply text-xs;
+    @apply mt-2;
+  }
+
+  .desktop-stat-change.positive {
+    @apply text-emerald-400;
+  }
+
+  .desktop-stat-change.negative {
+    @apply text-red-400;
+  }
+
+  /* Desktop Chart */
+  .desktop-chart {
+    @apply h-80;
+    @apply rounded-2xl;
+    @apply bg-surface-800;
+    @apply border border-surface-700;
+    @apply p-6;
+  }
+
+  /* Desktop Timeline */
+  .desktop-timeline {
+    @apply h-40;
+    @apply bg-surface-800;
+    @apply rounded-xl;
+    @apply overflow-hidden;
+    @apply border border-surface-700;
+  }
+
+  .desktop-timeline-ruler {
+    @apply h-6;
+    @apply bg-surface-700;
+    @apply border-b border-surface-600;
+  }
+
+  .desktop-timeline-tracks {
+    @apply flex-1;
+    @apply overflow-y-auto;
+  }
+
+  .desktop-timeline-track {
+    @apply h-12;
+    @apply bg-surface-700/50;
+    @apply border-b border-surface-600;
+  }
+
+  .desktop-timeline-clip {
+    @apply absolute;
+    @apply h-10;
+    @apply mt-1;
+    @apply rounded-lg;
+    @apply bg-primary-500/30;
+    @apply border border-primary-500/50;
+    @apply cursor-pointer;
+    @apply hover:bg-primary-500/40;
+    @apply transition-colors;
+  }
+
+  /* Desktop Layer Panel */
+  .desktop-layer-item {
+    @apply flex items-center gap-3;
+    @apply p-3;
+    @apply rounded-xl;
+    @apply hover:bg-hover;
+    @apply cursor-pointer;
+    @apply transition-colors;
+  }
+
+  .desktop-layer-item.selected {
+    @apply bg-primary-500/10;
+    @apply border border-primary-500/20;
+  }
+
+  .desktop-layer-thumbnail {
+    @apply w-14 h-14;
+    @apply rounded-lg;
+    @apply bg-surface-700;
+    @apply overflow-hidden;
+  }
+
+  .desktop-layer-controls {
+    @apply flex items-center gap-2;
+    @apply opacity-0;
+    @apply group-hover:opacity-100;
+    @apply transition-opacity;
+  }
+
+  /* Desktop Filter Panel */
+  .desktop-filter-grid {
+    @apply grid grid-cols-4 gap-4;
+  }
+
+  .desktop-filter-item {
+    @apply aspect-square;
+    @apply rounded-xl;
+    @apply overflow-hidden;
+    @apply cursor-pointer;
+    @apply ring-2 ring-transparent;
+    @apply hover:ring-primary-500;
+    @apply transition-all;
+  }
+
+  .desktop-filter-item.active {
+    @apply ring-primary-500;
+  }
+
+  .desktop-filter-preview {
+    @apply w-full h-full;
+    @apply object-cover;
+  }
+
+  .desktop-filter-label {
+    @apply text-xs;
+    @apply text-center;
+    @apply mt-2;
+    @apply text-surface-400;
+  }
+
+  /* Desktop Export Panel */
+  .desktop-export-grid {
+    @apply grid grid-cols-3 gap-4;
+  }
+
+  .desktop-export-option {
+    @apply p-5;
+    @apply rounded-2xl;
+    @apply bg-surface-800;
+    @apply border border-surface-700;
+    @apply cursor-pointer;
+    @apply hover:bg-hover hover:border-primary-500/30;
+    @apply transition-all;
+  }
+
+  .desktop-export-option.selected {
+    @apply bg-primary-500/10;
+    @apply border-primary-500/50;
+  }
+
+  /* Hide mobile/tablet elements */
+  .hidden-desktop {
+    @apply hidden;
+  }
+
+  /* Show desktop-only elements */
+  .desktop-only {
+    @apply block;
+  }
+}
+
+/* Large Desktop */
+@media (min-width: 1440px) {
+  .container {
+    @apply max-w-[1400px];
+  }
+
+  .desktop-sidebar {
+    @apply w-80;
+  }
+
+  .desktop-right-panel {
+    @apply w-96;
+  }
+
+  .desktop-drawer {
+    @apply w-[560px];
+  }
+
+  .desktop-drawer-lg {
+    @apply w-[720px];
+  }
+
+  .desktop-stats-grid {
+    @apply grid grid-cols-4 gap-8;
+  }
+
+  .desktop-grid-2 {
+    @apply grid-cols-2;
+  }
+
+  .desktop-grid-3 {
+    @apply grid-cols-3;
+  }
+
+  .desktop-grid-4 {
+    @apply grid-cols-4;
+  }
+}
+
+/* Extra Large Desktop */
+@media (min-width: 1920px) {
+  .container {
+    @apply max-w-[1800px];
+  }
+
+  :root {
+    --text-base: 1rem;
+  }
+}
