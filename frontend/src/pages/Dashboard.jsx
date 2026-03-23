@@ -21,7 +21,8 @@ import {
   FolderOpen,
   Sparkles,
   Crown,
-  Plus
+  Plus,
+  Image as ImageIcon2
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import Button from '@/components/ui/Button';
@@ -353,7 +354,7 @@ export default function Dashboard() {
 
           <div className="space-y-3">
             {mockRecentProjects.map((project, index) => {
-              const TypeIcon = project.type === 'image' ? Image : project.type === 'video' ? Video : Music;
+              const TypeIcon = project.type === 'image' ? ImageIcon2 : project.type === 'video' ? Video : Music;
               
               return (
                 <motion.div
