@@ -16,29 +16,33 @@ import { cn } from '@/utils/helpers/cn';
 
 export default function CanvasControls({ className }) {
   const {
-    canvas,
+    zoom,
     setZoom,
-    resetView,
+    pan,
+    setPan,
     activeTool,
     setActiveTool,
     ui,
-    setUIState
+    setUI,
+    showGrid,
+    setShowGrid
   } = useEditor();
 
   const handleZoomIn = () => {
-    setZoom(Math.min(canvas.zoom * 1.25, 10));
+    setZoom(Math.min(zoom * 1.25, 10));
   };
 
   const handleZoomOut = () => {
-    setZoom(Math.max(canvas.zoom / 1.25, 0.1));
+    setZoom(Math.max(zoom / 1.25, 0.1));
   };
 
   const handleFitToScreen = () => {
-    resetView();
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
   };
 
   const toggleGrid = () => {
-    setUIState({ gridVisible: !ui.gridVisible });
+    setShowGrid(!showGrid);
   };
 
   const controls = [

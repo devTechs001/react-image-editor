@@ -11,7 +11,7 @@ import {
   Box,
   Circle,
   Triangle,
-  Move3d,
+  Move3D,
   RotateCw,
   Maximize2,
   Download,
@@ -403,7 +403,7 @@ export default function ThreeJSCanvas({ className }) {
               variant="ghost"
               size="icon-sm"
               onClick={resetCamera}
-              icon={Move3d}
+              icon={Move3D}
             />
             <Button
               variant="secondary"

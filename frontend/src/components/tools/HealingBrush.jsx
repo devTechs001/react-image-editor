@@ -1,6 +1,6 @@
 // frontend/src/components/tools/HealingBrush.jsx
 import React, { useState } from 'react';
-import { Bandage as Patch, Sparkles, Wand2, Info, CheckCircle2, Zap } from 'lucide-react';
+import { Heart as Patch, Sparkles, Wand2, Info, CheckCircle2, Zap } from 'lucide-react';
 import { useEditor } from '@/contexts/EditorContext';
 import Slider from '@/components/ui/Slider';
 import { cn } from '@/utils/helpers/cn';

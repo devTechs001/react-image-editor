@@ -297,3 +297,26 @@ Error: Route.get() requires a callback function but got a [object Undefined]
     at TracingChannel.traceSync (node:diagnostics_channel:328:14)
     at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
     at Module.require (node:internal/modules/cjs/loader:1463:12)
+2026-03-23 16:36:31 [ERROR]: uncaughtException: Route.get() requires a callback function but got a [object Undefined]
+Error: Route.get() requires a callback function but got a [object Undefined]
+    at Route.<computed> [as get] (/home/darkhat/projects/react-projects/react-image-editor/backend/node_modules/.pnpm/express@4.22.1/node_modules/express/lib/router/route.js:216:15)
+    at proto.<computed> [as get] (/home/darkhat/projects/react-projects/react-image-editor/backend/node_modules/.pnpm/express@4.22.1/node_modules/express/lib/router/index.js:521:19)
+    at Object.<anonymous> (/home/darkhat/projects/react-projects/react-image-editor/backend/src/routes/users.js:15:8)
+    at Module._compile (node:internal/modules/cjs/loader:1705:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1838:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Module._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Module.require (node:internal/modules/cjs/loader:1463:12) {"error":{},"exception":true,"date":"Mon Mar 23 2026 16:36:31 GMT+0300 (East Africa Time)","process":{"pid":540168,"uid":1000,"gid":1000,"cwd":"/home/darkhat/projects/react-projects/react-image-editor/backend","execPath":"/usr/bin/node","version":"v22.22.1","argv":["/usr/bin/node","/home/darkhat/projects/react-projects/react-image-editor/backend/src/app.js"],"memoryUsage":{"rss":122126336,"heapTotal":60542976,"heapUsed":34373480,"external":20691760,"arrayBuffers":18297511}},"os":{"loadavg":[9.71,8.32,6.54],"uptime":110582.02},"trace":[{"column":15,"file":"/home/darkhat/projects/react-projects/react-image-editor/backend/node_modules/.pnpm/express@4.22.1/node_modules/express/lib/router/route.js","function":"Route.<computed> [as get]","line":216,"method":"<computed> [as get]","native":false},{"column":19,"file":"/home/darkhat/projects/react-projects/react-image-editor/backend/node_modules/.pnpm/express@4.22.1/node_modules/express/lib/router/index.js","function":"proto.<computed> [as get]","line":521,"method":"<computed> [as get]","native":false},{"column":8,"file":"/home/darkhat/projects/react-projects/react-image-editor/backend/src/routes/users.js","function":null,"line":15,"method":null,"native":false},{"column":14,"file":"node:internal/modules/cjs/loader","function":"Module._compile","line":1705,"method":"_compile","native":false},{"column":10,"file":"node:internal/modules/cjs/loader","function":"Module._extensions..js","line":1838,"method":".js","native":false},{"column":32,"file":"node:internal/modules/cjs/loader","function":"Module.load","line":1441,"method":"load","native":false},{"column":12,"file":"node:internal/modules/cjs/loader","function":"Module._load","line":1263,"method":"_load","native":false},{"column":14,"file":"node:diagnostics_channel","function":"TracingChannel.traceSync","line":328,"method":"traceSync","native":false},{"column":24,"file":"node:internal/modules/cjs/loader","function":"wrapModuleLoad","line":237,"method":null,"native":false},{"column":12,"file":"node:internal/modules/cjs/loader","function":"Module.require","line":1463,"method":"require","native":false}],"service":"ai-media-editor"}
+Error: Route.get() requires a callback function but got a [object Undefined]
+    at Route.<computed> [as get] (/home/darkhat/projects/react-projects/react-image-editor/backend/node_modules/.pnpm/express@4.22.1/node_modules/express/lib/router/route.js:216:15)
+    at proto.<computed> [as get] (/home/darkhat/projects/react-projects/react-image-editor/backend/node_modules/.pnpm/express@4.22.1/node_modules/express/lib/router/index.js:521:19)
+    at Object.<anonymous> (/home/darkhat/projects/react-projects/react-image-editor/backend/src/routes/users.js:15:8)
+    at Module._compile (node:internal/modules/cjs/loader:1705:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1838:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Module._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Module.require (node:internal/modules/cjs/loader:1463:12)

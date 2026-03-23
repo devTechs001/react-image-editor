@@ -27,6 +27,7 @@ import {
   HardDrive,
   Wifi,
   Maximize2,
+  Move3D,
 } from 'lucide-react';
 import { useEditor } from '@/contexts/EditorContext';
 import Button from '@/components/ui/Button';
@@ -78,7 +79,7 @@ const processingOperations = [
     id: 'resize',
     name: 'Batch Resize',
     description: 'Resize multiple images',
-    icon: Move3d,
+    icon: Move3D,
     estimatedTime: 10,
     category: 'transformation'
   }

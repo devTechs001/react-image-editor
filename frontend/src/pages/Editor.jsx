@@ -1,6 +1,6 @@
 // frontend/src/pages/Editor.jsx
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Save,
@@ -15,7 +15,21 @@ import {
   Settings,
   HelpCircle,
   ChevronLeft,
-  Upload
+  Upload,
+  Layers,
+  Sparkles,
+  Box,
+  Puzzle,
+  Brain,
+  Scan,
+  MessageSquare,
+  Wand2,
+  Zap,
+  Cloud,
+  Terminal,
+  Activity,
+  Code2,
+  History
 } from 'lucide-react';
 import { useEditor } from '@/contexts/EditorContext';
 import ImageCanvas from '@/components/canvas/ImageCanvas';
@@ -25,16 +39,62 @@ import RightPanel from '@/components/workspace/RightPanel';
 import FileUpload from '@/components/ui/FileUpload';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
+import ToolManager from '@/components/tools/ToolManager';
 import { cn } from '@/utils/helpers/cn';
 import toast from 'react-hot-toast';
-import { useSearchParams } from 'react-router-dom';
+
+// Tab mapping for URL parameters
+const TAB_MAPPING = {
+  '3d': '3d',
+  'plugins': 'plugins',
+  'neural': 'neural',
+  'vision': 'vision',
+  'nlp': 'nlp',
+  'genai': 'genai',
+  'rl': 'rl',
+  'cloud': 'cloud',
+  'script': 'script',
+  'performance': 'performance',
+  'api': 'api',
+  'batch': 'batch',
+  'layers': 'layers',
+  'properties': 'properties',
+  'assets': 'assets',
+  'presets': 'presets',
+  'ai': 'ai',
+  'history': 'history'
+};
+
+// AI Tool mapping for URL parameters
+const AI_TOOL_MAPPING = {
+  'face-swap': 'face-swap',
+  'background-replace': 'background-replace',
+  'background-remove': 'background-remove',
+  'colorize': 'colorize',
+  'face-detect': 'face-detect',
+  'face-enhance': 'face-enhance',
+  'object-detect': 'object-detect',
+  'computer-vision': 'computer-vision',
+  'nlp': 'nlp',
+  'generative-ai': 'generative-ai',
+  'reinforcement-learning': 'reinforcement-learning',
+  'enhance': 'enhance',
+  'upscale': 'upscale',
+  'denoise': 'denoise',
+  'style-transfer': 'style-transfer',
+  'generate': 'generate',
+  'inpaint': 'inpaint',
+  'text-to-image': 'text-to-image',
+  'smart-crop': 'smart-crop',
+  'portrait-mode': 'portrait-mode'
+};
 
 export default function Editor() {
   const { projectId } = useParams();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const canvasRef = useRef(null);
-  
+
   const {
     project,
     image,
@@ -50,30 +110,50 @@ export default function Editor() {
     ui,
     setUI,
     layers,
-    addLayer
+    addLayer,
+    activeTab,
+    setActiveTab,
+    activeTool,
+    setActiveTool
   } = useEditor();
 
   const [showUploadModal, setShowUploadModal] = useState(!image);
   const [showExportModal, setShowExportModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
 
-  // Handle tool selection from URL params
+  // Handle tab and tool selection from URL params on mount and param change
   useEffect(() => {
+    const tab = searchParams.get('tab');
     const tool = searchParams.get('tool');
-    if (tool) {
-      setUI(prev => ({ 
-        ...prev, 
-        activeTab: 'ai',
-        activeAITool: tool 
-      }));
+
+    if (tab && TAB_MAPPING[tab]) {
+      setActiveTab(TAB_MAPPING[tab]);
     }
-  }, [searchParams, setUI]);
+
+    if (tool && AI_TOOL_MAPPING[tool]) {
+      setUI(prev => ({
+        ...prev,
+        activeTab: 'ai',
+        activeAITool: AI_TOOL_MAPPING[tool]
+      }));
+    } else if (!tool && ui.activeAITool) {
+      // Clear AI tool if no tool param but tab is set
+      if (tab && tab !== 'ai') {
+        setUI(prev => ({
+          ...prev,
+          activeAITool: null
+        }));
+      }
+    }
+  }, [searchParams, setActiveTab, setUI, ui.activeAITool]);
 
   // Load project if projectId exists
   useEffect(() => {
     if (projectId) {
       // Load project from API
       // loadProject(projectId)
+      toast.success('Project loaded!');
     } else {
       // If no projectId and no image, initialize with default layer
       if (layers.length === 0) {
@@ -98,30 +178,141 @@ export default function Editor() {
 
       const isMod = e.metaKey || e.ctrlKey;
 
+      // Global shortcuts (always work)
       if (isMod && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
         if (canUndo) undo();
-      } else if (isMod && e.key === 'z' && e.shiftKey) {
+        return;
+      }
+
+      if (isMod && e.key === 'z' && e.shiftKey) {
         e.preventDefault();
         if (canRedo) redo();
-      } else if (isMod && e.key === 's') {
+        return;
+      }
+
+      if (isMod && e.key === 's') {
         e.preventDefault();
         handleSave();
-      } else if (isMod && e.key === 'e') {
+        return;
+      }
+
+      if (isMod && e.key === 'e') {
         e.preventDefault();
         setShowExportModal(true);
+        return;
+      }
+
+      // Panel shortcuts (only when not in text input)
+      if (isMod && e.shiftKey) {
+        switch (e.key.toLowerCase()) {
+          case 'l':
+            e.preventDefault();
+            setActiveTab('layers');
+            setSearchParams({ tab: 'layers' });
+            toast.success('Layers panel opened');
+            break;
+          case 'a':
+            e.preventDefault();
+            setActiveTab('ai');
+            setSearchParams({ tab: 'ai' });
+            toast.success('AI tools panel opened');
+            break;
+          case '3':
+            e.preventDefault();
+            setActiveTab('3d');
+            setSearchParams({ tab: '3d' });
+            toast.success('3D Canvas opened');
+            break;
+          case 'p':
+            e.preventDefault();
+            setActiveTab('plugins');
+            setSearchParams({ tab: 'plugins' });
+            toast.success('Plugin Manager opened');
+            break;
+          case 'n':
+            e.preventDefault();
+            setActiveTab('neural');
+            setSearchParams({ tab: 'neural' });
+            toast.success('Neural Networks opened');
+            break;
+          case 'v':
+            e.preventDefault();
+            setActiveTab('vision');
+            setSearchParams({ tab: 'vision' });
+            toast.success('Computer Vision opened');
+            break;
+          case 'm':
+            e.preventDefault();
+            setActiveTab('nlp');
+            setSearchParams({ tab: 'nlp' });
+            toast.success('NLP panel opened');
+            break;
+          case 'g':
+            e.preventDefault();
+            setActiveTab('genai');
+            setSearchParams({ tab: 'genai' });
+            toast.success('Generative AI opened');
+            break;
+          case 'r':
+            e.preventDefault();
+            setActiveTab('rl');
+            setSearchParams({ tab: 'rl' });
+            toast.success('Reinforcement Learning opened');
+            break;
+          case 'c':
+            e.preventDefault();
+            setActiveTab('cloud');
+            setSearchParams({ tab: 'cloud' });
+            toast.success('Cloud Sync opened');
+            break;
+          case 's':
+            e.preventDefault();
+            setActiveTab('script');
+            setSearchParams({ tab: 'script' });
+            toast.success('Script Editor opened');
+            break;
+          case 'f':
+            e.preventDefault();
+            setActiveTab('performance');
+            setSearchParams({ tab: 'performance' });
+            toast.success('Performance Monitor opened');
+            break;
+          case 'i':
+            e.preventDefault();
+            setActiveTab('api');
+            setSearchParams({ tab: 'api' });
+            toast.success('API Integration opened');
+            break;
+          case 'b':
+            e.preventDefault();
+            setActiveTab('batch');
+            setSearchParams({ tab: 'batch' });
+            toast.success('Batch Processing opened');
+            break;
+          case 'h':
+            e.preventDefault();
+            setActiveTab('history');
+            setSearchParams({ tab: 'history' });
+            toast.success('History panel opened');
+            break;
+          case '?':
+            e.preventDefault();
+            setShowShortcutsModal(true);
+            break;
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [canUndo, canRedo, undo, redo]);
+  }, [canUndo, canRedo, undo, redo, setActiveTab, setSearchParams]);
 
   const handleFileUpload = useCallback(async (file) => {
     try {
       const imageUrl = URL.createObjectURL(file);
       const img = new Image();
-      
+
       img.onload = () => {
         setImage(imageUrl);
         setOriginalImage(imageUrl);
@@ -133,16 +324,23 @@ export default function Editor() {
         setShowUploadModal(false);
         toast.success('Image loaded successfully!');
       };
-      
+
       img.onerror = () => {
         toast.error('Failed to load image');
       };
-      
+
       img.src = imageUrl;
     } catch (error) {
       toast.error('Error loading file');
     }
   }, [setImage, setOriginalImage, setCanvas, addToHistory]);
+
+  // Quick access function for advanced panels
+  const openPanel = useCallback((tabId, label) => {
+    setActiveTab(tabId);
+    setSearchParams({ tab: tabId });
+    toast.success(`${label} opened`);
+  }, [setActiveTab, setSearchParams]);
 
   const handleSave = useCallback(async () => {
     setIsSaving(true);
@@ -167,6 +365,39 @@ export default function Editor() {
       toast.error('Export failed');
     }
   }, []);
+
+  // Panel quick access menu items
+  const panelMenuItems = [
+    { id: 'layers', icon: Layers, label: 'Layers', shortcut: '⇧L' },
+    { id: 'ai', icon: Sparkles, label: 'AI Tools', shortcut: '⇧A' },
+    { id: '3d', icon: Box, label: '3D Canvas', shortcut: '⇧3', badge: '3D' },
+    { id: 'plugins', icon: Puzzle, label: 'Plugins', shortcut: '⇧P' },
+    { id: 'neural', icon: Brain, label: 'Neural Networks', shortcut: '⇧N', badge: 'AI' },
+    { id: 'vision', icon: Scan, label: 'Computer Vision', shortcut: '⇧V', badge: 'New' },
+    { id: 'nlp', icon: MessageSquare, label: 'NLP', shortcut: '⇧M', badge: 'New' },
+    { id: 'genai', icon: Wand2, label: 'Generative AI', shortcut: '⇧G', badge: 'New' },
+    { id: 'rl', icon: Zap, label: 'Reinforcement', shortcut: '⇧R', badge: 'New' },
+    { id: 'cloud', icon: Cloud, label: 'Cloud Sync', shortcut: '⇧C' },
+    { id: 'script', icon: Terminal, label: 'Script Editor', shortcut: '⇧S', badge: 'Code' },
+    { id: 'performance', icon: Activity, label: 'Performance', shortcut: '⇧F' },
+    { id: 'api', icon: Code2, label: 'API Integration', shortcut: '⇧I' },
+    { id: 'batch', icon: Layers, label: 'Batch Processing', shortcut: '⇧B', badge: 'New' },
+    { id: 'history', icon: History, label: 'History', shortcut: '⇧H' }
+  ];
+
+  const [showPanelMenu, setShowPanelMenu] = useState(false);
+
+  // Close panel menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (showPanelMenu && !e.target.closest('[data-panel-menu]')) {
+        setShowPanelMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showPanelMenu]);
 
   return (
     <div className="h-screen flex flex-col bg-editor-bg overflow-hidden">
@@ -243,12 +474,91 @@ export default function Editor() {
           >
             <span className="hidden sm:inline">Export</span>
           </Button>
-          
+
           <div className="h-4 sm:h-6 w-px bg-editor-border mx-1 sm:mx-2 hidden sm:block" />
-          
+
+          {/* Panels Dropdown */}
+          <div className="relative hidden md:block" data-panel-menu>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowPanelMenu(!showPanelMenu)}
+              className="gap-2"
+            >
+              <MoreHorizontal className="w-4 h-4" />
+              <span className="hidden lg:inline">Panels</span>
+            </Button>
+
+            <AnimatePresence>
+              {showPanelMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute right-0 top-full mt-2 w-72 bg-editor-surface border border-editor-border rounded-xl shadow-2xl z-50 max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-dark"
+                  data-panel-menu
+                >
+                  <div className="p-3 border-b border-editor-border">
+                    <h3 className="text-xs font-semibold text-white uppercase tracking-wider">
+                      Quick Access Panels
+                    </h3>
+                  </div>
+
+                  <div className="p-2 space-y-1">
+                    {panelMenuItems.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = activeTab === item.id;
+
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            openPanel(item.id, item.label);
+                            setShowPanelMenu(false);
+                          }}
+                          className={cn(
+                            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all group",
+                            isActive
+                              ? "bg-primary-500/10 text-primary-400"
+                              : "text-surface-400 hover:text-white hover:bg-white/5"
+                          )}
+                        >
+                          <Icon className="w-4 h-4 flex-shrink-0" />
+                          <span className="flex-1 text-sm text-left">{item.label}</span>
+                          {item.badge && (
+                            <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-full bg-primary-500/20 text-primary-300">
+                              {item.badge}
+                            </span>
+                          )}
+                          <span className="text-[10px] text-surface-600 group-hover:text-surface-500">
+                            {item.shortcut}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="p-3 border-t border-editor-border">
+                    <button
+                      onClick={() => {
+                        setShowShortcutsModal(true);
+                        setShowPanelMenu(false);
+                      }}
+                      className="w-full flex items-center gap-2 text-xs text-surface-400 hover:text-white transition-colors"
+                    >
+                      <HelpCircle className="w-3 h-3" />
+                      <span>View all keyboard shortcuts</span>
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           <Button
             variant="ghost"
             size="icon-sm"
+            onClick={() => setShowShortcutsModal(true)}
             icon={HelpCircle}
           />
           <Button
@@ -270,6 +580,9 @@ export default function Editor() {
             <>
               <ImageCanvas ref={canvasRef} />
               
+              {/* Tool Manager - Handles active tool rendering */}
+              <ToolManager activeTool={activeTool} canvasRef={canvasRef} />
+
               {/* Canvas Controls Overlay - Mobile: Bottom, Desktop: Bottom Center */}
               <div className="absolute bottom-3 sm:bottom-6 left-3 sm:left-1/2 sm:-translate-x-1/2 z-10">
                 <CanvasControls />
@@ -413,6 +726,100 @@ export default function Editor() {
                   {scale}
                 </button>
               ))}
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Keyboard Shortcuts Modal */}
+      <Modal
+        isOpen={showShortcutsModal}
+        onClose={() => setShowShortcutsModal(false)}
+        title="Keyboard Shortcuts"
+        size="lg"
+      >
+        <div className="space-y-6">
+          {/* Global Shortcuts */}
+          <div>
+            <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-3">
+              Global Shortcuts
+            </h4>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between p-2.5 bg-surface-800 rounded-lg">
+                <span className="text-sm text-white">Undo</span>
+                <kbd className="px-2 py-1.5 bg-surface-700 rounded text-xs text-surface-300 font-mono">
+                  ⌘/Ctrl + Z
+                </kbd>
+              </div>
+              <div className="flex items-center justify-between p-2.5 bg-surface-800 rounded-lg">
+                <span className="text-sm text-white">Redo</span>
+                <kbd className="px-2 py-1.5 bg-surface-700 rounded text-xs text-surface-300 font-mono">
+                  ⌘/Ctrl + ⇧ + Z
+                </kbd>
+              </div>
+              <div className="flex items-center justify-between p-2.5 bg-surface-800 rounded-lg">
+                <span className="text-sm text-white">Save Project</span>
+                <kbd className="px-2 py-1.5 bg-surface-700 rounded text-xs text-surface-300 font-mono">
+                  ⌘/Ctrl + S
+                </kbd>
+              </div>
+              <div className="flex items-center justify-between p-2.5 bg-surface-800 rounded-lg">
+                <span className="text-sm text-white">Export Image</span>
+                <kbd className="px-2 py-1.5 bg-surface-700 rounded text-xs text-surface-300 font-mono">
+                  ⌘/Ctrl + E
+                </kbd>
+              </div>
+            </div>
+          </div>
+
+          {/* Panel Shortcuts */}
+          <div>
+            <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-3">
+              Panel Shortcuts (⌘/Ctrl + ⇧ + Key)
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {[
+                { key: 'L', label: 'Layers Panel' },
+                { key: 'A', label: 'AI Tools' },
+                { key: '3', label: '3D Canvas' },
+                { key: 'P', label: 'Plugin Manager' },
+                { key: 'N', label: 'Neural Networks' },
+                { key: 'V', label: 'Computer Vision' },
+                { key: 'M', label: 'NLP' },
+                { key: 'G', label: 'Generative AI' },
+                { key: 'R', label: 'Reinforcement Learning' },
+                { key: 'C', label: 'Cloud Sync' },
+                { key: 'S', label: 'Script Editor' },
+                { key: 'F', label: 'Performance Monitor' },
+                { key: 'I', label: 'API Integration' },
+                { key: 'B', label: 'Batch Processing' },
+                { key: 'H', label: 'History' }
+              ].map((shortcut) => (
+                <div
+                  key={shortcut.key}
+                  className="flex items-center justify-between p-2.5 bg-surface-800 rounded-lg"
+                >
+                  <span className="text-sm text-white">{shortcut.label}</span>
+                  <kbd className="px-2 py-1.5 bg-surface-700 rounded text-xs text-surface-300 font-mono">
+                    ⌘/Ctrl + ⇧ + {shortcut.key}
+                  </kbd>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Tips */}
+          <div className="p-4 rounded-xl bg-gradient-to-br from-primary-500/10 to-secondary-500/10 border border-primary-500/20">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-primary-500/20 text-primary-400">
+                <HelpCircle className="w-4 h-4" />
+              </div>
+              <div>
+                <h5 className="text-sm font-semibold text-white mb-1">Pro Tip</h5>
+                <p className="text-xs text-surface-400 leading-relaxed">
+                  You can also access all panels from the dropdown menu in the top bar, or by clicking the tabs in the right panel.
+                </p>
+              </div>
             </div>
           </div>
         </div>

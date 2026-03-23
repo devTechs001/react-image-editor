@@ -6,8 +6,26 @@ import CanvasControls from './CanvasControls';
 const ImageCanvas = ({ width = 800, height = 600 }) => {
   const canvasRef = useRef(null);
   const fabricCanvasRef = useRef(null);
-  const { state, dispatch } = useEditorContext();
+  const { 
+    image, 
+    setImage, 
+    layers, 
+    addLayer, 
+    canvas: canvasState, 
+    setCanvas,
+    zoom,
+    setZoom,
+    pan,
+    setPan,
+    activeTool,
+    setActiveTool,
+    addToHistory,
+    history,
+    undo,
+    redo
+  } = useEditor();
   const [selectedObject, setSelectedObject] = useState(null);
+  const [clipboard, setClipboard] = useState(null);
 
   useEffect(() => {
     // Initialize Fabric.js canvas
@@ -41,41 +59,22 @@ const ImageCanvas = ({ width = 800, height = 600 }) => {
 
   const handleSelection = (e) => {
     setSelectedObject(e.selected[0]);
-    dispatch({
-      type: 'SET_SELECTED_OBJECT',
-      payload: e.selected[0],
-    });
   };
 
   const handleObjectModified = (e) => {
-    saveHistory();
+    addToHistory('object_modified', { object: e.target });
   };
 
   const handleObjectMoving = (e) => {
-    // Snap to grid
-    if (state.snapToGrid) {
-      const obj = e.target;
-      obj.set({
-        left: Math.round(obj.left / 10) * 10,
-        top: Math.round(obj.top / 10) * 10,
-      });
-    }
+    // Snap to grid can be implemented here
   };
 
   const handleObjectScaling = (e) => {
-    const obj = e.target;
-    if (state.maintainAspectRatio) {
-      obj.set({ lockUniScaling: true });
-    }
+    // Maintain aspect ratio can be implemented here
   };
 
   const handleObjectRotating = (e) => {
-    const obj = e.target;
-    if (state.snapRotation) {
-      obj.set({
-        angle: Math.round(obj.angle / 15) * 15,
-      });
-    }
+    // Snap rotation can be implemented here
   };
 
   const handleKeyDown = (e) => {
@@ -271,15 +270,15 @@ const ImageCanvas = ({ width = 800, height = 600 }) => {
 
     if (activeObject) {
       activeObject.clone((cloned) => {
-        dispatch({ type: 'SET_CLIPBOARD', payload: cloned });
+        setClipboard(cloned);
       });
     }
   };
 
   const paste = () => {
-    if (!state.clipboard) return;
+    if (!clipboard) return;
 
-    state.clipboard.clone((clonedObj) => {
+    clipboard.clone((clonedObj) => {
       const canvas = fabricCanvasRef.current;
       canvas.discardActiveObject();
 
@@ -394,23 +393,7 @@ const ImageCanvas = ({ width = 800, height = 600 }) => {
 
   const saveHistory = () => {
     const json = fabricCanvasRef.current.toJSON();
-    dispatch({ type: 'SAVE_HISTORY', payload: json });
-  };
-
-  const undo = () => {
-    dispatch({ type: 'UNDO' });
-    const previousState = state.history[state.historyStep - 1];
-    if (previousState) {
-      importCanvas(previousState);
-    }
-  };
-
-  const redo = () => {
-    dispatch({ type: 'REDO' });
-    const nextState = state.history[state.historyStep + 1];
-    if (nextState) {
-      importCanvas(nextState);
-    }
+    addToHistory('canvas_state', { canvas: json });
   };
 
   const zoomIn = () => {
