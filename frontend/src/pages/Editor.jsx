@@ -646,14 +646,17 @@ export default function Editor() {
             minSize={1024}
             multiple={false}
             onFileSelect={(files) => {
+              // files is an array, take the first one
               if (files && files.length > 0) {
-                handleFileUpload(files[0]);
+                const file = files[0];
+                console.log('File selected:', file.name, file.size, file.type);
+                handleFileUpload(file);
               }
             }}
             imagePreview={true}
             dragText="Drag & drop your image here"
             browseText="Browse Files"
-            description="Supports PNG, JPG, JPEG, GIF, WebP, SVG, BMP"
+            description="Supports PNG, JPG, JPEG, GIF, WebP, SVG, BMP - Max 50MB"
           />
 
           <div className="flex items-center gap-4 my-4">
