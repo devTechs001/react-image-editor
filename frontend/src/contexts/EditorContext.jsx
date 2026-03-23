@@ -25,6 +25,59 @@ export function EditorProvider({ children }) {
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
 
+  // Adjustment state
+  const [adjustments, setAdjustments] = useState({
+    brightness: 0,
+    exposure: 0,
+    contrast: 0,
+    highlights: 0,
+    shadows: 0,
+    whites: 0,
+    blacks: 0,
+    saturation: 0,
+    vibrance: 0,
+    temperature: 0,
+    tint: 0,
+    clarity: 0,
+    sharpness: 0,
+    noise: 0,
+    vignette: 0
+  });
+
+  const setAdjustment = useCallback((key, value) => {
+    setAdjustments(prev => ({ ...prev, [key]: value }));
+    setIsDirty(true);
+  }, []);
+
+  const resetAdjustments = useCallback(() => {
+    setAdjustments({
+      brightness: 0,
+      exposure: 0,
+      contrast: 0,
+      highlights: 0,
+      shadows: 0,
+      whites: 0,
+      blacks: 0,
+      saturation: 0,
+      vibrance: 0,
+      temperature: 0,
+      tint: 0,
+      clarity: 0,
+      sharpness: 0,
+      noise: 0,
+      vignette: 0
+    });
+  }, []);
+
+  // Filter state
+  const [activeFilter, setActiveFilter] = useState(null);
+  const [filterIntensity, setFilterIntensity] = useState(100);
+
+  const setFilter = useCallback((filter) => {
+    setActiveFilter(filter);
+    setIsDirty(true);
+  }, []);
+
   // AI state
   const [aiProcessing, setAIProcessing] = useState(false);
   const [aiResults, setAIResults] = useState({});
@@ -32,6 +85,18 @@ export function EditorProvider({ children }) {
   // Tool state
   const [activeTool, setActiveTool] = useState('select');
   const [toolOptions, setToolOptions] = useState({});
+
+  // UI state
+  const [ui, setUI] = useState({
+    rightPanelOpen: true,
+    leftPanelOpen: true,
+    activeTab: 'layers',
+    activeAITool: null
+  });
+
+  const setActiveTab = useCallback((tab) => {
+    setUI(prev => ({ ...prev, activeTab: tab }));
+  }, []);
 
   // View state
   const [zoom, setZoom] = useState(1);
@@ -126,15 +191,36 @@ export function EditorProvider({ children }) {
     setIsDirty(true);
   }, [selectedLayerId]);
 
-  const reorderLayers = useCallback((fromIndex, toIndex) => {
+  const reorderLayers = useCallback((newLayers) => {
+    setLayers(newLayers);
+    setIsDirty(true);
+  }, []);
+
+  const duplicateLayer = useCallback((layerId) => {
     setLayers(prev => {
-      const newLayers = [...prev];
-      const [removed] = newLayers.splice(fromIndex, 1);
-      newLayers.splice(toIndex, 0, removed);
-      return newLayers;
+      const layer = prev.find(l => l.id === layerId);
+      if (!layer) return prev;
+      const newLayer = { ...layer, id: `layer-${Date.now()}`, name: `${layer.name} copy` };
+      return [...prev, newLayer];
     });
     setIsDirty(true);
   }, []);
+
+  const toggleLayerVisibility = useCallback((layerId) => {
+    setLayers(prev => prev.map(l => 
+      l.id === layerId ? { ...l, visible: !l.visible } : l
+    ));
+  }, []);
+
+  const toggleLayerLock = useCallback((layerId) => {
+    setLayers(prev => prev.map(l => 
+      l.id === layerId ? { ...l, locked: !l.locked } : l
+    ));
+  }, []);
+
+  const setImage = useCallback((imageUrl) => {
+    setCurrentImageData(imageUrl);
+  }, [setCurrentImageData]);
 
   const value = {
     // State
@@ -160,6 +246,12 @@ export function EditorProvider({ children }) {
     isDirty,
     canUndo,
     canRedo,
+    ui,
+    activeTab: ui.activeTab,
+    adjustments,
+    activeFilter,
+    filterIntensity,
+    image: currentImage,
     
     // Setters
     setCanvas,
@@ -182,6 +274,13 @@ export function EditorProvider({ children }) {
     setExportSettings,
     setProject,
     setIsDirty,
+    setUI,
+    setActiveTab,
+    setAdjustment,
+    resetAdjustments,
+    setFilter,
+    setFilterIntensity,
+    setImage,
     
     // Actions
     resetCanvas,
@@ -191,7 +290,10 @@ export function EditorProvider({ children }) {
     addLayer,
     updateLayer,
     deleteLayer,
-    reorderLayers
+    reorderLayers,
+    duplicateLayer,
+    toggleLayerVisibility,
+    toggleLayerLock
   };
 
   return (

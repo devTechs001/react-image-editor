@@ -20,6 +20,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import CommandPalette from '@/components/ui/CommandPalette';
 import { cn } from '@/utils/helpers/cn';
 
 export default function Header({ onMenuClick, sidebarOpen }) {
@@ -29,6 +30,20 @@ export default function Header({ onMenuClick, sidebarOpen }) {
   const [showSearch, setShowSearch] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+
+  // Keyboard shortcut for command palette
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowCommandPalette(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const notifications = [
     { id: 1, title: 'Export Complete', message: 'Your video has been exported successfully', time: '2m ago', unread: true },
@@ -60,13 +75,19 @@ export default function Header({ onMenuClick, sidebarOpen }) {
 
           {/* Search - Desktop */}
           <div className="hidden md:block relative w-80">
-            <Input
-              type="search"
-              placeholder="Search projects, templates..."
-              size="sm"
-              icon={Search}
-              className="bg-editor-card/50"
-            />
+            <button
+              onClick={() => setShowCommandPalette(true)}
+              className="w-full"
+            >
+              <Input
+                type="search"
+                placeholder="Search projects, templates..."
+                size="sm"
+                icon={Search}
+                className="bg-editor-card/50 cursor-pointer"
+                readOnly
+              />
+            </button>
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-surface-600">
               <kbd className="px-1.5 py-0.5 text-xs rounded bg-surface-800 border border-surface-700">
                 ⌘
@@ -266,6 +287,12 @@ export default function Header({ onMenuClick, sidebarOpen }) {
           )}
         </div>
       </div>
+
+      {/* Command Palette */}
+      <CommandPalette
+        isOpen={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
+      />
     </header>
   );
 }

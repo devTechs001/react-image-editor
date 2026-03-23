@@ -20,17 +20,20 @@ import {
   Crown,
   X,
   GalleryVerticalEnd,
-  Smile
+  Smile,
+  BarChart3
 } from 'lucide-react';
 import { cn } from '@/utils/helpers/cn';
 import Button from '@/components/ui/Button';
 
 const mainNavItems = [
   { icon: Home, label: 'Home', path: '/' },
+  { icon: BarChart3, label: 'Dashboard', path: '/dashboard' },
   { icon: Image, label: 'Image Editor', path: '/editor' },
   { icon: Video, label: 'Video Editor', path: '/video-editor' },
   { icon: Music, label: 'Audio Editor', path: '/audio-editor' },
-  { icon: GalleryVerticalEnd, label: 'Gallery', path: '/gallery' }
+  { icon: GalleryVerticalEnd, label: 'Gallery', path: '/gallery' },
+  { icon: HelpCircle, label: 'About', path: '/about' }
 ];
 
 const toolsNavItems = [

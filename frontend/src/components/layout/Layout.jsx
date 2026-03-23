@@ -1,6 +1,6 @@
 // frontend/src/components/layout/Layout.jsx
 import React, { useState, useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from './Header';
 import Navbar from './Navbar';
@@ -47,7 +47,7 @@ export default function Layout() {
       {/* Main Content */}
       <div
         className={cn(
-          'flex-1 flex flex-col min-h-screen transition-all duration-300',
+          'flex-1 flex flex-col h-screen transition-all duration-300 overflow-hidden',
           !isMobile && sidebarOpen ? 'ml-[280px]' : 'ml-0'
         )}
       >
@@ -58,33 +58,36 @@ export default function Layout() {
         />
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="container-custom py-8">
+        <main className="flex-1 overflow-y-auto scrollbar-thin scrollbar-dark flex flex-col">
+          <div className="container-custom py-8 flex-1">
             <Outlet />
           </div>
-        </main>
-
-        {/* Footer */}
-        <footer className="border-t border-editor-border py-6">
-          <div className="container-custom">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <p className="text-sm text-surface-500">
-                © 2024 AI Media Studio. All rights reserved.
-              </p>
-              <div className="flex items-center gap-6">
-                <a href="#" className="text-sm text-surface-500 hover:text-white transition-colors">
-                  Privacy
-                </a>
-                <a href="#" className="text-sm text-surface-500 hover:text-white transition-colors">
-                  Terms
-                </a>
-                <a href="#" className="text-sm text-surface-500 hover:text-white transition-colors">
-                  Help
-                </a>
+          
+          {/* Footer */}
+          <footer className="border-t border-editor-border py-6 mt-auto">
+            <div className="container-custom">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                <p className="text-sm text-surface-500">
+                  © 2024 AI Media Studio. All rights reserved.
+                </p>
+                <div className="flex items-center gap-6">
+                  <Link to="/about" className="text-sm text-surface-500 hover:text-white transition-colors">
+                    About
+                  </Link>
+                  <Link to="/terms" className="text-sm text-surface-500 hover:text-white transition-colors">
+                    Terms
+                  </Link>
+                  <Link to="/privacy" className="text-sm text-surface-500 hover:text-white transition-colors">
+                    Privacy
+                  </Link>
+                  <Link to="/help" className="text-sm text-surface-500 hover:text-white transition-colors">
+                    Help
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
-        </footer>
+          </footer>
+        </main>
       </div>
 
       {/* Mobile Navigation */}

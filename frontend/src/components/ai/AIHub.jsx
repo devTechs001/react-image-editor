@@ -44,6 +44,14 @@ const aiTools = [
     popular: true
   },
   {
+    id: 'background-replace',
+    name: 'Replace Background',
+    description: 'Swap backgrounds with professional scenes',
+    icon: Image,
+    color: 'from-blue-500 to-indigo-500',
+    category: 'edit'
+  },
+  {
     id: 'upscale',
     name: 'AI Upscale',
     description: 'Upscale images up to 4x resolution',

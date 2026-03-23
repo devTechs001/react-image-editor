@@ -14,6 +14,7 @@ const assetRoutes = require('./assets');
 const exportRoutes = require('./export');
 const storageRoutes = require('./storage');
 const dashboardRoutes = require('./dashboard');
+const webhookRoutes = require('./webhooks');
 
 // Mount routes
 router.use('/auth', authRoutes);
@@ -28,6 +29,7 @@ router.use('/assets', assetRoutes);
 router.use('/export', exportRoutes);
 router.use('/storage', storageRoutes);
 router.use('/dashboard', dashboardRoutes);
+router.use('/webhooks', webhookRoutes);
 
 // API Documentation
 router.get('/', (req, res) => {
@@ -47,7 +49,8 @@ router.get('/', (req, res) => {
       assets: '/api/v1/assets',
       export: '/api/v1/export',
       storage: '/api/v1/storage',
-      dashboard: '/api/v1/dashboard'
+      dashboard: '/api/v1/dashboard',
+      webhooks: '/api/v1/webhooks'
     }
   });
 });

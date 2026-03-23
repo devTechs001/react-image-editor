@@ -167,14 +167,242 @@ exports.paypalWebhook = async (req, res, next) => {
 exports.githubWebhook = async (req, res, next) => {
   try {
     const event = req.headers['x-github-event'];
-    
+
     logger.info('GitHub webhook received:', event);
-    
+
     // Handle GitHub events
     // Could trigger deployments, updates, etc.
-    
+
     res.json({ received: true });
   } catch (error) {
     next(error);
   }
 };
+
+// AI Processing webhook (for async AI jobs)
+exports.aiProcessingWebhook = async (req, res, next) => {
+  try {
+    const { jobId, status, result, error } = req.body;
+
+    logger.info('AI Processing webhook received:', { jobId, status });
+
+    // Find the job in database and update status
+    const Job = require('../models/Job');
+    const job = await Job.findById(jobId);
+
+    if (!job) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+
+    job.status = status;
+    job.completedAt = new Date();
+
+    if (status === 'completed') {
+      job.result = result;
+      
+      // Notify user via WebSocket
+      const { getIO } = require('../websocket/socketServer');
+      const io = getIO();
+      io.to(job.user.toString()).emit('ai:completed', {
+        jobId: job._id,
+        result
+      });
+
+      // Send email notification
+      const User = require('../models/User');
+      const user = await User.findById(job.user);
+      if (user) {
+        const emailService = require('../services/email/emailService');
+        await emailService.sendAITaskCompletedEmail(user.email, job.type);
+      }
+    } else if (status === 'failed') {
+      job.error = error;
+      
+      // Notify user of failure
+      const { getIO } = require('../websocket/socketServer');
+      const io = getIO();
+      io.to(job.user.toString()).emit('ai:failed', {
+        jobId: job._id,
+        error
+      });
+    }
+
+    await job.save();
+    res.json({ received: true });
+  } catch (error) {
+    logger.error('AI Processing webhook error:', error);
+    next(error);
+  }
+};
+
+// Export completion webhook
+exports.exportWebhook = async (req, res, next) => {
+  try {
+    const { exportId, status, downloadUrl, error } = req.body;
+
+    logger.info('Export webhook received:', { exportId, status });
+
+    const Export = require('../models/Export');
+    const exportDoc = await Export.findById(exportId).populate('user');
+
+    if (!exportDoc) {
+      return res.status(404).json({ error: 'Export not found' });
+    }
+
+    exportDoc.status = status;
+    exportDoc.completedAt = new Date();
+
+    if (status === 'completed') {
+      exportDoc.downloadUrl = downloadUrl;
+      
+      // Decrement export quota
+      const User = require('../models/User');
+      const user = exportDoc.user;
+      if (user) {
+        user.usage.exportsThisMonth = (user.usage.exportsThisMonth || 0) + 1;
+        await user.save();
+
+        // Notify via WebSocket
+        const { getIO } = require('../websocket/socketServer');
+        const io = getIO();
+        io.to(user._id.toString()).emit('export:completed', {
+          exportId: exportDoc._id,
+          downloadUrl
+        });
+
+        // Send email
+        const emailService = require('../services/email/emailService');
+        await emailService.sendExportCompletedEmail(user.email, exportDoc.name);
+      }
+    } else if (status === 'failed') {
+      exportDoc.error = error;
+      
+      const { getIO } = require('../websocket/socketServer');
+      const io = getIO();
+      io.to(exportDoc.user._id.toString()).emit('export:failed', {
+        exportId: exportDoc._id,
+        error
+      });
+    }
+
+    await exportDoc.save();
+    res.json({ received: true });
+  } catch (error) {
+    logger.error('Export webhook error:', error);
+    next(error);
+  }
+};
+
+// Video processing webhook
+exports.videoProcessingWebhook = async (req, res, next) => {
+  try {
+    const { jobId, status, result, progress } = req.body;
+
+    logger.info('Video processing webhook received:', { jobId, status, progress });
+
+    const VideoJob = require('../models/VideoJob');
+    const job = await VideoJob.findById(jobId).populate('user');
+
+    if (!job) {
+      return res.status(404).json({ error: 'Video job not found' });
+    }
+
+    if (progress !== undefined) {
+      job.progress = progress;
+      
+      // Send progress update via WebSocket
+      const { getIO } = require('../websocket/socketServer');
+      const io = getIO();
+      io.to(job.user._id.toString()).emit('video:progress', {
+        jobId: job._id,
+        progress
+      });
+    }
+
+    if (status === 'completed') {
+      job.status = 'completed';
+      job.result = result;
+      job.completedAt = new Date();
+
+      const { getIO } = require('../websocket/socketServer');
+      const io = getIO();
+      io.to(job.user._id.toString()).emit('video:completed', {
+        jobId: job._id,
+        result
+      });
+
+      const emailService = require('../services/email/emailService');
+      await emailService.sendVideoProcessingCompletedEmail(job.user.email, job.name);
+    } else if (status === 'failed') {
+      job.status = 'failed';
+      job.error = error;
+
+      const { getIO } = require('../websocket/socketServer');
+      const io = getIO();
+      io.to(job.user._id.toString()).emit('video:failed', {
+        jobId: job._id,
+        error
+      });
+    }
+
+    await job.save();
+    res.json({ received: true });
+  } catch (error) {
+    logger.error('Video processing webhook error:', error);
+    next(error);
+  }
+};
+
+// Generic webhook for third-party integrations
+exports.genericWebhook = async (req, res, next) => {
+  try {
+    const { source, event, data } = req.body;
+
+    logger.info('Generic webhook received:', { source, event });
+
+    // Log webhook event
+    const WebhookLog = require('../models/WebhookLog');
+    await WebhookLog.create({
+      source,
+      event,
+      data,
+      receivedAt: new Date()
+    });
+
+    // Process based on source and event
+    switch (source) {
+      case 'zapier':
+        await handleZapierWebhook(event, data);
+        break;
+      case 'make':
+        await handleMakeWebhook(event, data);
+        break;
+      case 'n8n':
+        await handleN8NWebhook(event, data);
+        break;
+      default:
+        logger.warn(`Unknown webhook source: ${source}`);
+    }
+
+    res.json({ received: true });
+  } catch (error) {
+    logger.error('Generic webhook error:', error);
+    next(error);
+  }
+};
+
+// Helper functions for automation platforms
+async function handleZapierWebhook(event, data) {
+  logger.info('Processing Zapier webhook:', event);
+  // Implement Zapier-specific logic
+}
+
+async function handleMakeWebhook(event, data) {
+  logger.info('Processing Make webhook:', event);
+  // Implement Make-specific logic
+}
+
+async function handleN8NWebhook(event, data) {
+  logger.info('Processing n8n webhook:', event);
+  // Implement n8n-specific logic
+}

@@ -15,6 +15,10 @@ import LayersPanel from '@/components/layers/LayersPanel';
 import Adjustments from '@/components/filters/Adjustments';
 import FilterPanel from '@/components/filters/FilterPanel';
 import AIHub from '@/components/ai/AIHub';
+import BackgroundRemoval from '@/components/ai/BackgroundRemoval';
+import AutoEnhance from '@/components/ai/AutoEnhance';
+import FaceSwap from '@/components/ai/FaceSwap';
+import BackgroundReplacement from '@/components/ai/BackgroundReplacement';
 import HistoryPanel from './HistoryPanel';
 import { cn } from '@/utils/helpers/cn';
 import Button from '@/components/ui/Button';
@@ -63,6 +67,34 @@ export default function RightPanel({ className }) {
   }, [isResizing]);
 
   const renderContent = () => {
+    // If a tool is active, render that tool's panel
+    if (activeTab === 'ai' && ui.activeAITool) {
+      switch (ui.activeAITool) {
+        case 'background-remove':
+          return <BackgroundRemoval image={image} onComplete={(result) => {
+            setImage(result);
+            addToHistory(result);
+          }} />;
+        case 'enhance':
+          return <AutoEnhance image={image} onComplete={(result) => {
+            setImage(result);
+            addToHistory(result);
+          }} />;
+        case 'face-swap':
+          return <FaceSwap image={image} onComplete={(result) => {
+            setImage(result);
+            addToHistory(result);
+          }} />;
+        case 'background-replace':
+          return <BackgroundReplacement image={image} onComplete={(result) => {
+            setImage(result);
+            addToHistory(result);
+          }} />;
+        default:
+          return <AIHub onToolSelect={(tool) => setUI({ ...ui, activeAITool: tool.id })} />;
+      }
+    }
+
     switch (activeTab) {
       case 'layers':
         return <LayersPanel />;

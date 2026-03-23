@@ -17,8 +17,14 @@ const Settings = lazy(() => import('./pages/Settings'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Pricing = lazy(() => import('./pages/Pricing'));
 const Help = lazy(() => import('./pages/Help'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Terms = lazy(() => import('./pages/Terms'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const About = lazy(() => import('./pages/About'));
 const Login = lazy(() => import('./pages/Auth/Login'));
 const Register = lazy(() => import('./pages/Auth/Register'));
+const ForgotPassword = lazy(() => import('./pages/Auth/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/Auth/ResetPassword'));
 
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
@@ -62,10 +68,13 @@ function App({ onReady }) {
           {/* Auth Routes */}
           <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
           <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
-          
+          <Route path="/forgot-password" element={<PageWrapper><ForgotPassword /></PageWrapper>} />
+          <Route path="/reset-password/:token" element={<PageWrapper><ResetPassword /></PageWrapper>} />
+
           {/* Main App Routes */}
           <Route path="/" element={<Layout />}>
             <Route index element={<PageWrapper><Home /></PageWrapper>} />
+            <Route path="dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
             <Route path="editor" element={<PageWrapper><Editor /></PageWrapper>} />
             <Route path="editor/:projectId" element={<PageWrapper><Editor /></PageWrapper>} />
             <Route path="video-editor" element={<PageWrapper><VideoEditor /></PageWrapper>} />
@@ -79,8 +88,11 @@ function App({ onReady }) {
             <Route path="profile" element={<PageWrapper><Profile /></PageWrapper>} />
             <Route path="pricing" element={<PageWrapper><Pricing /></PageWrapper>} />
             <Route path="help" element={<PageWrapper><Help /></PageWrapper>} />
+            <Route path="terms" element={<PageWrapper><Terms /></PageWrapper>} />
+            <Route path="privacy" element={<PageWrapper><Privacy /></PageWrapper>} />
+            <Route path="about" element={<PageWrapper><About /></PageWrapper>} />
           </Route>
-          
+
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -57,8 +57,21 @@ export default function Editor() {
     if (projectId) {
       // Load project from API
       // loadProject(projectId)
+    } else {
+      // If no projectId and no image, initialize with default layer
+      if (layers.length === 0) {
+        addLayer({
+          id: 'background',
+          name: 'Background',
+          type: 'image',
+          visible: true,
+          locked: false,
+          opacity: 100,
+          blendMode: 'normal'
+        });
+      }
     }
-  }, [projectId]);
+  }, [projectId, layers.length, addLayer]);
 
   // Keyboard shortcuts
   useEffect(() => {
