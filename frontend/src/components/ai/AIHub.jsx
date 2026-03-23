@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles,
   Wand2,
-  Image,
+  Image as ImageIcon,
   Scissors,
   Palette,
   Zap,
@@ -19,7 +19,10 @@ import {
   Smile,
   Brush,
   Type,
-  ArrowRight
+  ArrowRight,
+  Waves,
+  Scan,
+  Target
 } from 'lucide-react';
 import { useEditor } from '@/contexts/EditorContext';
 import Button from '@/components/ui/Button';
@@ -47,7 +50,7 @@ const aiTools = [
     id: 'background-replace',
     name: 'Replace Background',
     description: 'Swap backgrounds with professional scenes',
-    icon: Image,
+    icon: ImageIcon,
     color: 'from-blue-500 to-indigo-500',
     category: 'edit'
   },
@@ -68,11 +71,27 @@ const aiTools = [
     category: 'enhance'
   },
   {
-    id: 'object-remove',
-    name: 'Remove Objects',
-    description: 'Remove unwanted objects from images',
-    icon: Eraser,
-    color: 'from-emerald-500 to-teal-500',
+    id: 'denoise',
+    name: 'AI Denoise',
+    description: 'Remove noise and grain from photos',
+    icon: Waves,
+    color: 'from-cyan-500 to-blue-500',
+    category: 'enhance'
+  },
+  {
+    id: 'face-detect',
+    name: 'Face Detection',
+    description: 'Identify faces and landmarks',
+    icon: Scan,
+    color: 'from-rose-500 to-red-500',
+    category: 'portrait'
+  },
+  {
+    id: 'object-detect',
+    name: 'Object Detection',
+    description: 'Identify and isolate objects',
+    icon: Target,
+    color: 'from-indigo-500 to-violet-500',
     category: 'edit'
   },
   {

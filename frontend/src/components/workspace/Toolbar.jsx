@@ -16,7 +16,7 @@ import {
   FlipHorizontal,
   Wand2,
   Layers,
-  Image,
+  Image as ImageIcon,
   ZoomIn
 } from 'lucide-react';
 import { useEditor } from '@/contexts/EditorContext';

@@ -1,16 +1,17 @@
 // frontend/src/components/layout/MobileNav.jsx
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Image, Video, FolderOpen, Settings } from 'lucide-react';
+import { Home, Image as ImageIcon, Video, FolderOpen, Settings, BarChart3, GalleryVerticalEnd } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/utils/helpers/cn';
 
 const navItems = [
   { icon: Home, label: 'Home', path: '/' },
-  { icon: Image, label: 'Image', path: '/editor' },
+  { icon: BarChart3, label: 'Dash', path: '/dashboard' },
+  { icon: ImageIcon, label: 'Image', path: '/editor' },
   { icon: Video, label: 'Video', path: '/video-editor' },
   { icon: FolderOpen, label: 'Projects', path: '/projects' },
-  { icon: Settings, label: 'Settings', path: '/settings' }
+  { icon: GalleryVerticalEnd, label: 'Gallery', path: '/gallery' }
 ];
 
 export default function MobileNav() {

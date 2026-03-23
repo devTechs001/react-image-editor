@@ -1,7 +1,7 @@
 // frontend/src/components/ui/FileUpload.jsx
 import React, { useCallback, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, File, Image, X, Check } from 'lucide-react';
+import { Upload, File, Image as ImageIcon, X, Check } from 'lucide-react';
 import { cn } from '@/utils/helpers/cn';
 
 export default function FileUpload({
@@ -101,7 +101,7 @@ export default function FileUpload({
   };
 
   const getFileIcon = (file) => {
-    if (file.type?.startsWith('image/')) return Image;
+    if (file.type?.startsWith('image/')) return ImageIcon;
     return File;
   };
 

@@ -8,7 +8,8 @@ import {
   Palette,
   History,
   ChevronLeft,
-  X
+  X,
+  Image as ImageIcon
 } from 'lucide-react';
 import { useEditor } from '@/contexts/EditorContext';
 import LayersPanel from '@/components/layers/LayersPanel';
@@ -19,21 +20,39 @@ import BackgroundRemoval from '@/components/ai/BackgroundRemoval';
 import AutoEnhance from '@/components/ai/AutoEnhance';
 import FaceSwap from '@/components/ai/FaceSwap';
 import BackgroundReplacement from '@/components/ai/BackgroundReplacement';
-import HistoryPanel from './HistoryPanel';
+import Colorization from '@/components/ai/Colorization';
+import Denoising from '@/components/ai/Denoising';
+import StyleTransfer from '@/components/ai/StyleTransfer';
+import FaceDetection from '@/components/ai/FaceDetection';
+import ObjectDetection from '@/components/ai/ObjectDetection';
+import AIPrompts from '@/components/ai/AIPrompts';
+import HistoryStack from '@/components/canvas/HistoryStack';
+import AssetsPanel from './AssetsPanel';
+import LibraryPanel from './LibraryPanel';
+import PresetsPanel from './PresetsPanel';
+import PropertiesPanel from './PropertiesPanel';
 import { cn } from '@/utils/helpers/cn';
 import Button from '@/components/ui/Button';
 
 const tabs = [
   { id: 'layers', icon: Layers, label: 'Layers' },
-  { id: 'adjustments', icon: Sliders, label: 'Adjust' },
-  { id: 'filters', icon: Palette, label: 'Filters' },
+  { id: 'properties', icon: Sliders, label: 'Properties' },
+  { id: 'assets', icon: ImageIcon, label: 'Assets' },
+  { id: 'presets', icon: Palette, label: 'Presets' },
   { id: 'ai', icon: Sparkles, label: 'AI' },
   { id: 'history', icon: History, label: 'History' }
 ];
 
 export default function RightPanel({ className }) {
-  const { ui, activeTab, setActiveTab } = useEditor();
-  const [width, setWidth] = useState(320);
+  const { 
+    ui, 
+    activeTab, 
+    setActiveTab,
+    image,
+    setImage,
+    addToHistory
+  } = useEditor();
+  const [width, setWidth] = useState(280);
   const [isResizing, setIsResizing] = useState(false);
 
   // Safe access to ui state
@@ -48,7 +67,7 @@ export default function RightPanel({ className }) {
     const handleMouseMove = (e) => {
       if (!isResizing) return;
       const newWidth = window.innerWidth - e.clientX;
-      setWidth(Math.max(280, Math.min(480, newWidth)));
+      setWidth(Math.max(240, Math.min(400, newWidth)));
     };
 
     const handleMouseUp = () => {
@@ -90,6 +109,35 @@ export default function RightPanel({ className }) {
             setImage(result);
             addToHistory(result);
           }} />;
+        case 'colorize':
+          return <Colorization image={image} onComplete={(result) => {
+            setImage(result);
+            addToHistory(result);
+          }} />;
+        case 'denoise':
+          return <Denoising image={image} onComplete={(result) => {
+            setImage(result);
+            addToHistory(result);
+          }} />;
+        case 'style-transfer':
+          return <StyleTransfer image={image} onComplete={(result) => {
+            setImage(result);
+            addToHistory(result);
+          }} />;
+        case 'face-detect':
+          return <FaceDetection image={image} onComplete={(result) => {
+            setImage(result);
+            addToHistory(result);
+          }} />;
+        case 'object-detect':
+          return <ObjectDetection image={image} onComplete={(result) => {
+            setImage(result);
+            addToHistory(result);
+          }} />;
+        case 'generate':
+          return <AIPrompts onGenerate={(prompt) => {
+            // Generation logic would go here
+          }} />;
         default:
           return <AIHub onToolSelect={(tool) => setUI({ ...ui, activeAITool: tool.id })} />;
       }
@@ -98,14 +146,18 @@ export default function RightPanel({ className }) {
     switch (activeTab) {
       case 'layers':
         return <LayersPanel />;
-      case 'adjustments':
-        return <Adjustments />;
-      case 'filters':
-        return <FilterPanel />;
+      case 'assets':
+        return <AssetsPanel />;
+      case 'presets':
+        return <PresetsPanel />;
+      case 'properties':
+        return <PropertiesPanel />;
+      case 'library':
+        return <LibraryPanel />;
       case 'ai':
-        return <AIHub />;
+        return <AIHub onToolSelect={(tool) => setUI({ ...ui, activeAITool: tool.id })} />;
       case 'history':
-        return <HistoryPanel />;
+        return <HistoryStack />;
       default:
         return <LayersPanel />;
     }
@@ -144,8 +196,8 @@ export default function RightPanel({ className }) {
         )}
       >
         {/* Mobile Header */}
-        <div className="md:hidden flex items-center justify-between p-3 border-b border-editor-border bg-editor-surface">
-          <h3 className="text-sm font-semibold text-white">
+        <div className="md:hidden flex items-center justify-between p-2.5 sm:p-3 border-b border-editor-border bg-editor-surface">
+          <h3 className="text-xs sm:text-sm font-semibold text-white">
             {tabs.find(t => t.id === activeTab)?.label || 'Panel'}
           </h3>
           <Button
@@ -154,7 +206,7 @@ export default function RightPanel({ className }) {
             onClick={() => {}}
             className="text-surface-400"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
         </div>
 
@@ -173,15 +225,15 @@ export default function RightPanel({ className }) {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  'flex-shrink-0 flex flex-col items-center gap-1 px-4 py-3',
+                  'flex-shrink-0 flex flex-col items-center gap-1 px-3 sm:px-4 py-2.5 sm:py-3',
                   'border-b-2 transition-colors',
                   activeTab === tab.id
                     ? 'border-primary-500 text-primary-400'
                     : 'border-transparent text-surface-400'
                 )}
               >
-                <Icon className="w-5 h-5" />
-                <span className="text-[10px] font-medium">{tab.label}</span>
+                <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-[9px] sm:text-[10px] font-medium">{tab.label}</span>
               </button>
             );
           })}

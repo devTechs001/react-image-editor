@@ -2,14 +2,14 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Folder, Plus, MessageSquare, User } from 'lucide-react';
+import { Home, Folder, Plus, MessageSquare, User, BarChart3, GalleryVerticalEnd } from 'lucide-react';
 import { cn } from '@/utils/helpers/cn';
 
 const navItems = [
   { icon: Home, label: 'Home', href: '/' },
-  { icon: Folder, label: 'Projects', href: '/projects' },
+  { icon: BarChart3, label: 'Dash', href: '/dashboard' },
   { icon: Plus, label: 'Create', href: '/editor', primary: true },
-  { icon: MessageSquare, label: 'Help', href: '/help' },
+  { icon: GalleryVerticalEnd, label: 'Gallery', href: '/gallery' },
   { icon: User, label: 'Profile', href: '/profile' }
 ];
 

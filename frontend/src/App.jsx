@@ -18,6 +18,7 @@ const Profile = lazy(() => import('./pages/Profile'));
 const Pricing = lazy(() => import('./pages/Pricing'));
 const Help = lazy(() => import('./pages/Help'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Assets = lazy(() => import('./pages/Assets'));
 const Terms = lazy(() => import('./pages/Terms'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const About = lazy(() => import('./pages/About'));
@@ -75,6 +76,7 @@ function App({ onReady }) {
           <Route path="/" element={<Layout />}>
             <Route index element={<PageWrapper><Home /></PageWrapper>} />
             <Route path="dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
+            <Route path="assets" element={<PageWrapper><Assets /></PageWrapper>} />
             <Route path="editor" element={<PageWrapper><Editor /></PageWrapper>} />
             <Route path="editor/:projectId" element={<PageWrapper><Editor /></PageWrapper>} />
             <Route path="video-editor" element={<PageWrapper><VideoEditor /></PageWrapper>} />

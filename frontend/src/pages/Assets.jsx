@@ -2,7 +2,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Image,
+  Image as ImageIcon,
   Video,
   Music,
   File,
@@ -254,7 +254,7 @@ export default function Assets() {
         ) : sortedAssets.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="w-16 h-16 rounded-full bg-surface-700 flex items-center justify-center mb-4">
-              <Image className="w-8 h-8 text-surface-400" />
+              <ImageIcon className="w-8 h-8 text-surface-400" />
             </div>
             <h3 className="text-lg font-medium text-white mb-1">No assets found</h3>
             <p className="text-sm text-surface-400 mb-4">

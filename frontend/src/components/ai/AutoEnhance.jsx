@@ -1,7 +1,7 @@
 // frontend/src/components/ai/AutoEnhance.jsx
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wand2, Sparkles, Download, Compare, Sliders } from 'lucide-react';
+import { Wand2, Sparkles, Download, Eye, Sliders } from 'lucide-react';
 import { useEditor } from '@/contexts/EditorContext';
 import Button from '@/components/ui/Button';
 import Slider from '@/components/ui/Slider';
@@ -110,7 +110,7 @@ export default function AutoEnhance({ image, onComplete }) {
               style={{ left: `${comparisonPosition}%` }}
             >
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center">
-                <Compare className="w-4 h-4 text-surface-600" />
+                <Eye className="w-4 h-4 text-surface-600" />
               </div>
             </div>
           )}
@@ -155,7 +155,7 @@ export default function AutoEnhance({ image, onComplete }) {
                 : 'bg-editor-card text-surface-400 hover:text-white'
             )}
           >
-            <Compare className="w-4 h-4" />
+            <Eye className="w-4 h-4" />
             <span className="text-sm font-medium">Compare</span>
           </button>
         )}

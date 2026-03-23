@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Home,
-  Image,
+  Image as ImageIcon,
   Video,
   Music,
   Layout,
@@ -17,11 +17,14 @@ import {
   Layers,
   Palette,
   Zap,
+  PaintBucket,
   Crown,
   X,
   GalleryVerticalEnd,
   Smile,
-  BarChart3
+  BarChart3,
+  Scan,
+  Target
 } from 'lucide-react';
 import { cn } from '@/utils/helpers/cn';
 import Button from '@/components/ui/Button';
@@ -29,7 +32,7 @@ import Button from '@/components/ui/Button';
 const mainNavItems = [
   { icon: Home, label: 'Home', path: '/' },
   { icon: BarChart3, label: 'Dashboard', path: '/dashboard' },
-  { icon: Image, label: 'Image Editor', path: '/editor' },
+  { icon: ImageIcon, label: 'Image Editor', path: '/editor' },
   { icon: Video, label: 'Video Editor', path: '/video-editor' },
   { icon: Music, label: 'Audio Editor', path: '/audio-editor' },
   { icon: GalleryVerticalEnd, label: 'Gallery', path: '/gallery' },
@@ -41,7 +44,11 @@ const toolsNavItems = [
   { icon: Layers, label: 'Templates', path: '/templates' },
   { icon: FolderOpen, label: 'Projects', path: '/projects' },
   { icon: Palette, label: 'Assets', path: '/assets' },
-  { icon: Smile, label: 'Face Swap', path: '/editor?tool=face-swap' }
+  { icon: Smile, label: 'Face Swap', path: '/editor?tool=face-swap' },
+  { icon: ImageIcon, label: 'Replace BG', path: '/editor?tool=background-replace' },
+  { icon: PaintBucket, label: 'Colorize', path: '/editor?tool=colorize' },
+  { icon: Scan, label: 'Face Detect', path: '/editor?tool=face-detect' },
+  { icon: Target, label: 'Object Detect', path: '/editor?tool=object-detect' }
 ];
 
 const bottomNavItems = [

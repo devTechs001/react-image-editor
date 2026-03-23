@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   TrendingUp,
   TrendingDown,
-  Image,
+  Image as ImageIcon,
   Video,
   Music,
   Download,
@@ -287,7 +287,7 @@ export default function Dashboard() {
                 className="justify-start"
                 onClick={() => navigate('/assets')}
               >
-                <Image className="w-4 h-4 mr-2" />
+                <ImageIcon className="w-4 h-4 mr-2" />
                 Upload Assets
               </Button>
               <Button

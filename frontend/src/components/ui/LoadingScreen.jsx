@@ -1,11 +1,11 @@
 // frontend/src/components/ui/LoadingScreen.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Image, Video, Music, Palette, Wand2 } from 'lucide-react';
+import { Sparkles, Image as ImageIcon, Video, Music, Palette, Wand2 } from 'lucide-react';
 import { cn } from '@/utils/helpers/cn';
 
 const loadingIcons = [
-  { Icon: Image, color: 'text-blue-500', delay: 0 },
+  { Icon: ImageIcon, color: 'text-blue-500', delay: 0 },
   { Icon: Video, color: 'text-purple-500', delay: 0.1 },
   { Icon: Music, color: 'text-pink-500', delay: 0.2 },
   { Icon: Palette, color: 'text-amber-500', delay: 0.3 },
