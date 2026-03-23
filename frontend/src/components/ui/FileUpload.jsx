@@ -1,13 +1,15 @@
 // frontend/src/components/ui/FileUpload.jsx
 import React, { useCallback, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, File, Image as ImageIcon, X, Check } from 'lucide-react';
+import { Upload, File, Image as ImageIcon, X, Check, AlertCircle, Loader2, ZoomIn } from 'lucide-react';
 import { cn } from '@/utils/helpers/cn';
+import Button from './Button';
 
 export default function FileUpload({
   accept,
   multiple = false,
   maxSize,
+  minSize,
   onFileSelect,
   onFileRemove,
   files = [],
@@ -17,32 +19,70 @@ export default function FileUpload({
   description,
   disabled = false,
   showPreview = true,
-  compact = false
+  compact = false,
+  imagePreview = false,
+  loading = false
 }) {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState(null);
+  const [previews, setPreviews] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
   const inputRef = useRef(null);
 
   const validateFile = (file) => {
     if (maxSize && file.size > maxSize) {
       return `File size exceeds ${formatFileSize(maxSize)}`;
     }
+    if (minSize && file.size < minSize) {
+      return `File size must be at least ${formatFileSize(minSize)}`;
+    }
+    if (accept) {
+      const acceptedTypes = Object.keys(accept).flatMap(key => {
+        if (key === 'image/*') return ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+        return accept[key];
+      });
+      
+      if (!acceptedTypes.includes(file.type)) {
+        return `Invalid file type. Accepted: ${Object.keys(accept).join(', ')}`;
+      }
+    }
     return null;
   };
 
-  const handleFiles = useCallback((fileList) => {
+  const generatePreview = useCallback((file) => {
+    if (!file.type.startsWith('image/')) return null;
+    
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    });
+  }, []);
+
+  const handleFiles = useCallback(async (fileList) => {
     const newFiles = Array.from(fileList);
     const errors = [];
+    setIsUploading(true);
 
-    const validFiles = newFiles.filter((file) => {
+    const validFiles = [];
+    for (const file of newFiles) {
       const error = validateFile(file);
       if (error) {
         errors.push(`${file.name}: ${error}`);
-        return false;
+      } else {
+        validFiles.push(file);
+        if (imagePreview) {
+          const preview = await generatePreview(file);
+          if (preview) {
+            setPreviews(prev => [...prev, { name: file.name, url: preview, size: file.size }]);
+          }
+        }
       }
-      return true;
-    });
+    }
 
+    setIsUploading(false);
+    
     if (errors.length > 0) {
       setError(errors.join(', '));
       setTimeout(() => setError(null), 5000);
@@ -51,7 +91,7 @@ export default function FileUpload({
     if (validFiles.length > 0) {
       onFileSelect?.(validFiles);
     }
-  }, [maxSize, onFileSelect]);
+  }, [maxSize, minSize, accept, imagePreview, generatePreview, onFileSelect]);
 
   const handleDrag = useCallback((e) => {
     e.preventDefault();
@@ -220,42 +260,98 @@ export default function FileUpload({
 
       {files.length > 0 && showPreview && (
         <div className="space-y-2">
-          {files.map((file, index) => {
-            const FileIcon = getFileIcon(file);
-            return (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                className="flex items-center gap-3 p-3 rounded-lg bg-editor-card border border-editor-border"
-              >
-                <div className={cn(
-                  'w-10 h-10 rounded-lg flex items-center justify-center',
-                  file.type?.startsWith('image/')
-                    ? 'bg-primary-500/10 text-primary-400'
-                    : 'bg-surface-700 text-surface-400'
-                )}>
-                  <FileIcon className="w-5 h-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-white truncate">{file.name}</p>
-                  <p className="text-xs text-surface-500">{formatFileSize(file.size)}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-400" />
-                  {onFileRemove && (
-                    <button
-                      onClick={() => onFileRemove?.(index)}
-                      className="p-1.5 rounded-lg hover:bg-white/5 transition-colors"
-                    >
-                      <X className="w-4 h-4 text-surface-400" />
-                    </button>
-                  )}
-                </div>
-              </motion.div>
-            );
-          })}
+          {imagePreview && previews.length > 0 ? (
+            // Image Grid Preview
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {previews.map((preview, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="group relative aspect-square rounded-xl overflow-hidden bg-editor-card border border-editor-border"
+                >
+                  <img
+                    src={preview.url}
+                    alt={preview.name}
+                    className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute bottom-0 left-0 right-0 p-2">
+                      <p className="text-xs text-white truncate">{preview.name}</p>
+                      <p className="text-[10px] text-surface-400">{formatFileSize(preview.size)}</p>
+                    </div>
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(preview.url, '_blank');
+                        }}
+                        className="p-1.5 rounded-lg bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors"
+                      >
+                        <ZoomIn className="w-3 h-3 text-white" />
+                      </button>
+                      {onFileRemove && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onFileRemove?.(index);
+                            setPreviews(prev => prev.filter((_, i) => i !== index));
+                          }}
+                          className="p-1.5 rounded-lg bg-rose-500/80 backdrop-blur-sm hover:bg-rose-600 transition-colors"
+                        >
+                          <X className="w-3 h-3 text-white" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            // List Preview
+            <div className="space-y-2">
+              {files.map((file, index) => {
+                const FileIcon = getFileIcon(file);
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="flex items-center gap-3 p-3 rounded-lg bg-editor-card border border-editor-border"
+                  >
+                    <div className={cn(
+                      'w-10 h-10 rounded-lg flex items-center justify-center',
+                      file.type?.startsWith('image/')
+                        ? 'bg-primary-500/10 text-primary-400'
+                        : 'bg-surface-700 text-surface-400'
+                    )}>
+                      <FileIcon className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-white truncate">{file.name}</p>
+                      <p className="text-xs text-surface-500">{formatFileSize(file.size)}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-emerald-400" />
+                      {onFileRemove && (
+                        <button
+                          onClick={() => {
+                            onFileRemove?.(index);
+                            setPreviews(prev => prev.filter((_, i) => i !== index));
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+                        >
+                          <X className="w-4 h-4 text-surface-400" />
+                        </button>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 

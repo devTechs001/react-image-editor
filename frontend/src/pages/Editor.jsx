@@ -628,33 +628,65 @@ export default function Editor() {
         size="lg"
         closeOnOverlay={!!image}
       >
-        <FileUpload
-          accept={{
-            'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp']
-          }}
-          maxSize={50 * 1024 * 1024}
-          onUpload={handleFileUpload}
-        />
-        
-        <div className="mt-6 pt-6 border-t border-editor-border">
-          <h4 className="text-xs sm:text-sm font-medium text-white mb-3 sm:mb-4">Or start from template</h4>
+        <div className="space-y-4">
+          <div className="text-center">
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Choose an image to edit
+            </h3>
+            <p className="text-sm text-surface-400">
+              Upload a high-quality image to start creating
+            </p>
+          </div>
+
+          <FileUpload
+            accept={{
+              'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp']
+            }}
+            maxSize={50 * 1024 * 1024}
+            minSize={1024}
+            multiple={false}
+            onFileSelect={(files) => {
+              if (files && files.length > 0) {
+                handleFileUpload(files[0]);
+              }
+            }}
+            imagePreview={true}
+            dragText="Drag & drop your image here"
+            browseText="Browse Files"
+            description="Supports PNG, JPG, JPEG, GIF, WebP, SVG, BMP"
+          />
+
+          <div className="flex items-center gap-4 my-4">
+            <div className="flex-1 h-px bg-editor-border" />
+            <span className="text-xs text-surface-500">OR</span>
+            <div className="flex-1 h-px bg-editor-border" />
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <h4 className="text-xs sm:text-sm font-medium text-white mb-3 sm:mb-4">Start from template</h4>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
             {[
-              { name: 'Instagram Post', size: '1080 × 1080' },
-              { name: 'Story', size: '1080 × 1920' },
-              { name: 'Twitter Post', size: '1200 × 675' },
-              { name: 'YouTube Thumbnail', size: '1280 × 720' }
+              { name: 'Instagram Post', size: '1080 × 1080', color: 'from-pink-500 to-rose-500' },
+              { name: 'Story', size: '1080 × 1920', color: 'from-purple-500 to-indigo-500' },
+              { name: 'Twitter Post', size: '1200 × 675', color: 'from-blue-500 to-cyan-500' },
+              { name: 'YouTube Thumbnail', size: '1280 × 720', color: 'from-red-500 to-orange-500' }
             ].map((template) => (
               <button
                 key={template.name}
-                className="p-2.5 sm:p-4 rounded-lg sm:rounded-xl bg-editor-card border border-editor-border hover:border-primary-500/50 transition-all text-left"
+                className="group p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-editor-card border border-editor-border hover:border-primary-500/50 transition-all text-left"
                 onClick={() => {
                   const [width, height] = template.size.split(' × ').map(Number);
                   setCanvas({ width, height, backgroundColor: '#ffffff' });
                   setShowUploadModal(false);
+                  toast.success(`${template.name} template loaded!`);
                 }}
               >
-                <div className="aspect-square rounded-lg bg-surface-800 mb-2 sm:mb-3" />
+                <div className={cn(
+                  "aspect-square rounded-lg mb-2 sm:mb-3 bg-gradient-to-br",
+                  template.color,
+                  "group-hover:scale-105 transition-transform"
+                )} />
                 <p className="text-xs sm:text-sm font-medium text-white">{template.name}</p>
                 <p className="text-[10px] sm:text-xs text-surface-500">{template.size}</p>
               </button>
