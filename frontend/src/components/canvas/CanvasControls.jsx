@@ -137,7 +137,7 @@ export default function CanvasControls({ className }) {
 
       {/* Zoom Percentage */}
       <div className="px-3 py-1.5 text-xs font-mono text-surface-400 min-w-[60px] text-center">
-        {Math.round(canvas.zoom * 100)}%
+        {Math.round(zoom * 100)}%
       </div>
     </motion.div>
   );
