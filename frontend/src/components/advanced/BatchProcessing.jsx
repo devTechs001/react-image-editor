@@ -25,7 +25,8 @@ import {
   Activity,
   Cpu,
   HardDrive,
-  Wifi
+  Wifi,
+  Maximize2,
 } from 'lucide-react';
 import { useEditor } from '@/contexts/EditorContext';
 import Button from '@/components/ui/Button';
